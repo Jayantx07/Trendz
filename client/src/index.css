@@ -1,0 +1,648 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS Variables */
+:root {
+  --color-primary: #ffffff;
+  --color-secondary: #f8f9fa;
+  --color-accent: #B48D56;
+  --color-text: #1a1a1a;
+  --color-text-light: #6b7280;
+  --color-border: #e5e7eb;
+  --color-border-dark: #374151;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #fff;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+/* Typography */
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Button Styles */
+.btn-primary {
+  @apply bg-black text-white px-6 py-3 rounded-[3px] font-medium transition-all duration-200 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2;
+}
+
+.btn-secondary {
+  @apply bg-transparent border border-black text-black px-6 py-3 rounded-[3px] font-medium transition-all duration-200 hover:bg-black hover:text-white focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2;
+}
+
+.btn-text {
+  @apply bg-transparent text-accent px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-accent/10 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+}
+
+/* Navigation Styles */
+.nav-link {
+  @apply relative transition-colors duration-200;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--color-accent);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Product Card Styles */
+.product-card {
+  @apply bg-beige rounded-[3px] shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg;
+}
+
+.product-image {
+  @apply aspect-[3/4] relative overflow-hidden;
+}
+
+.product-image img {
+  @apply w-full h-full object-cover transition-transform duration-300;
+}
+
+.product-card:hover .product-image img {
+  @apply scale-105;
+}
+
+/* Badge Styles */
+.badge-new {
+  @apply absolute top-4 left-4 bg-black text-white px-2 py-1 text-sm font-medium;
+}
+
+.badge-sale {
+  @apply absolute top-4 left-4 bg-red-500 text-white px-2 py-1 text-sm font-medium;
+}
+
+/* Form Styles */
+.form-input {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 transition-colors;
+}
+
+.form-input-dark {
+  @apply w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:border-accent focus:outline-none transition-colors;
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+.scale-in {
+  animation: scaleIn 0.4s ease-out;
+}
+
+/* Custom Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Utility Classes */
+.text-shadow-lg {
+  text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a67c4a;
+}
+
+/* Focus Styles */
+*:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Loading States */
+.loading {
+  @apply animate-pulse bg-gray-200;
+}
+
+.skeleton {
+  @apply bg-gray-200 animate-pulse rounded;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    @apply px-4;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  :root {
+    --color-accent: #8B4513;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #1a1a1a;
+    --color-secondary: #2d2d2d;
+    --color-text: #ffffff;
+    --color-text-light: #a1a1aa;
+    --color-border: #404040;
+  }
+}
+
+/* Custom Component Styles */
+.hero-section {
+  @apply relative h-screen overflow-hidden;
+}
+
+.hero-video {
+  @apply absolute inset-0 w-full h-full object-cover;
+}
+
+.hero-overlay {
+  @apply absolute inset-0 bg-black bg-opacity-30;
+}
+
+.hero-content {
+  @apply relative z-10 flex items-center justify-center h-full px-4 sm:px-6 lg:px-8;
+}
+
+/* Dropdown Styles */
+.dropdown-menu {
+  @apply absolute top-full left-0 mt-2 w-96 bg-white shadow-lg border border-gray-200 rounded-lg p-6 z-50;
+}
+
+.dropdown-section {
+  @apply mb-6 last:mb-0;
+}
+
+.dropdown-title {
+  @apply text-sm font-semibold text-gray-900 mb-3;
+}
+
+.dropdown-links {
+  @apply space-y-2;
+}
+
+.dropdown-link {
+  @apply text-sm text-gray-600 hover:text-accent transition-colors block;
+}
+
+/* Mobile Menu Styles */
+.mobile-menu {
+  @apply lg:hidden bg-white border-t border-gray-200;
+}
+
+.mobile-menu-item {
+  @apply block text-gray-900 hover:text-accent transition-colors py-2 font-medium;
+}
+
+.mobile-submenu {
+  @apply ml-4 mt-2 space-y-2;
+}
+
+.mobile-submenu-title {
+  @apply text-sm font-medium text-gray-700 mb-2;
+}
+
+.mobile-submenu-links {
+  @apply space-y-1 ml-4;
+}
+
+.mobile-submenu-link {
+  @apply text-sm text-gray-600 hover:text-accent transition-colors;
+}
+
+/* Search Overlay Styles */
+.search-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4;
+}
+
+.search-modal {
+  @apply bg-white rounded-lg p-6 w-full max-w-2xl;
+}
+
+.search-input {
+  @apply flex-1 text-lg border-none outline-none;
+}
+
+.search-suggestions {
+  @apply text-sm text-gray-500;
+}
+
+.search-suggestion-tag {
+  @apply px-2 py-1 bg-gray-100 rounded;
+}
+
+/* Footer Styles */
+.footer-section {
+  @apply border-b border-gray-800;
+}
+
+.footer-content {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12;
+}
+
+.footer-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8;
+}
+
+.footer-title {
+  @apply text-lg font-semibold mb-4;
+}
+
+.footer-links {
+  @apply space-y-2;
+}
+
+.footer-link {
+  @apply text-gray-300 hover:text-accent transition-colors text-sm;
+}
+
+.social-links {
+  @apply flex items-center gap-4;
+}
+
+.social-link {
+  @apply text-gray-400 hover:text-accent transition-colors;
+}
+
+/* Newsletter Styles */
+.newsletter-section {
+  @apply border-b border-gray-800;
+}
+
+.newsletter-grid {
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-8;
+}
+
+.newsletter-title {
+  @apply text-2xl font-display font-bold mb-4;
+}
+
+.newsletter-description {
+  @apply text-gray-300 mb-6;
+}
+
+.newsletter-form {
+  @apply flex flex-col sm:flex-row gap-4 max-w-md;
+}
+
+.newsletter-input {
+  @apply flex-1 px-4 py-3 border border-gray-600 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:border-accent focus:outline-none;
+}
+
+/* Product Grid Styles */
+.product-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8;
+}
+
+.product-card-wrapper {
+  /* @apply group; */
+}
+
+.product-image-container {
+  @apply aspect-[3/4] relative overflow-hidden;
+}
+
+.product-image {
+  @apply w-full h-full object-cover group-hover:scale-105 transition-transform duration-300;
+}
+
+.product-badges {
+  @apply absolute top-4 left-4 space-y-2;
+}
+
+.product-wishlist {
+  @apply absolute top-4 right-4 bg-white/80 hover:bg-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity;
+}
+
+.product-info {
+  @apply p-4;
+}
+
+.product-title {
+  @apply text-lg font-medium text-gray-900 mb-2 line-clamp-2;
+}
+
+.product-category {
+  @apply text-sm text-gray-500 mb-3;
+}
+
+.product-price {
+  @apply flex items-center gap-2;
+}
+
+.product-current-price {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.product-original-price {
+  @apply text-sm text-gray-500 line-through;
+}
+
+/* Section Styles */
+.section-padding {
+  @apply py-16;
+}
+
+.section-title {
+  @apply text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4;
+}
+
+.section-subtitle {
+  @apply text-lg text-gray-600;
+}
+
+.section-content {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Container Styles */
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Spacing Utilities */
+.space-y-8 > * + * {
+  margin-top: 2rem;
+}
+
+.space-y-6 > * + * {
+  margin-top: 1.5rem;
+}
+
+.space-y-4 > * + * {
+  margin-top: 1rem;
+}
+
+.space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
+
+/* Flex Utilities */
+.flex-center {
+  @apply flex items-center justify-center;
+}
+
+.flex-between {
+  @apply flex items-center justify-between;
+}
+
+.flex-start {
+  @apply flex items-center justify-start;
+}
+
+.flex-end {
+  @apply flex items-center justify-end;
+}
+
+/* Grid Utilities */
+.grid-auto-fit {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.grid-auto-fill {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+/* Aspect Ratio Utilities */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-photo {
+  aspect-ratio: 4 / 3;
+}
+
+/* Text Utilities */
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* Interactive States */
+.interactive {
+  @apply transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+}
+
+.interactive-text {
+  @apply transition-colors duration-200 hover:text-accent;
+}
+
+.interactive-bg {
+  @apply transition-colors duration-200 hover:bg-accent/10;
+}
+
+/* Loading States */
+.loading-spinner {
+  @apply animate-spin rounded-full border-2 border-gray-300 border-t-accent;
+}
+
+.loading-dots {
+  @apply flex space-x-1;
+}
+
+.loading-dots > div {
+  @apply w-2 h-2 bg-accent rounded-full animate-bounce;
+}
+
+.loading-dots > div:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.loading-dots > div:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+/* Error States */
+.error-message {
+  @apply text-red-600 text-sm mt-1;
+}
+
+.success-message {
+  @apply text-green-600 text-sm mt-1;
+}
+
+.warning-message {
+  @apply text-yellow-600 text-sm mt-1;
+}
+
+.info-message {
+  @apply text-blue-600 text-sm mt-1;
+}
+
+/* Disabled States */
+.disabled {
+  @apply opacity-50 cursor-not-allowed pointer-events-none;
+}
+
+/* Focus Visible */
+.focus-visible {
+  @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+}
+
+/* Screen Reader Only */
+.sr-only {
+  @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+}
+
+/* Print Styles */
+@media print {
+  .print-hidden {
+    display: none !important;
+  }
+  
+  .print-visible {
+    display: block !important;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .btn-primary {
+    @apply border-2 border-accent;
+  }
+  
+  .btn-secondary {
+    @apply border-2 border-accent;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse,
+  .animate-spin,
+  .animate-bounce {
+    animation: none !important;
+  }
+  
+  .transition-all,
+  .transition-colors,
+  .transition-transform {
+    transition: none !important;
+  }
+}
+
+.bg-beige {
+  background-color: #f8f6f3;
+}
+
+h1, .section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+h2, .section-subtitle {
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+.text-base, body, p, .product-info, .footer-content, .newsletter-section {
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.font-exo {
+  font-family: 'Exo', sans-serif;
+} 
