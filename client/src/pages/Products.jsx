@@ -42,11 +42,14 @@ const Products = () => {
     newArrival: searchParams.get('newArrival') === 'true',
   });
 
+  const query = searchParams.get('q') || '';
+
   useEffect(() => {
     setLoading(true);
     setError(null);
     // Build query string from filters
     const params = new URLSearchParams();
+    if (query) params.append('q', query);
     if (filters.category) params.append('category', filters.category);
     if (filters.gender) params.append('gender', filters.gender);
     if (filters.color) params.append('color', filters.color);
@@ -70,15 +73,66 @@ const Products = () => {
         setLoading(false);
       })
       .catch(err => {
-        setError(err.message || 'Error fetching products');
+        console.warn('API not available, using mock data:', err.message);
+        // Use mock data as fallback
+        const mockProducts = [
+          {
+            id: 1,
+            name: 'Silk Evening Gown',
+            price: 2800,
+            salePrice: null,
+            image: '/images/products/evening-gown-1.jpg',
+            category: 'Evening',
+            isNew: true,
+            colors: ['Black', 'Navy', 'Burgundy'],
+            sizes: ['XS', 'S', 'M', 'L', 'XL']
+          },
+          {
+            id: 2,
+            name: 'Floral Day Dress',
+            price: 1200,
+            salePrice: 960,
+            image: '/images/products/day-dress-1.jpg',
+            category: 'Day',
+            isNew: true,
+            colors: ['Blue', 'Pink', 'White'],
+            sizes: ['XS', 'S', 'M', 'L']
+          },
+          {
+            id: 3,
+            name: 'Signature Handbag',
+            price: 1800,
+            salePrice: null,
+            image: '/images/products/handbag-1.jpg',
+            category: 'Accessories',
+            isNew: true,
+            colors: ['Black', 'Brown', 'Cream'],
+            sizes: ['One Size']
+          },
+          {
+            id: 4,
+            name: 'Embroidered Blouse',
+            price: 850,
+            salePrice: null,
+            image: '/images/products/blouse-1.jpg',
+            category: 'Day',
+            isNew: true,
+            colors: ['White', 'Ivory', 'Pale Blue'],
+            sizes: ['XS', 'S', 'M', 'L', 'XL']
+          }
+        ];
+        const filtered = query
+          ? mockProducts.filter(p => (`${p.name} ${p.category}`).toLowerCase().includes(query.toLowerCase()))
+          : mockProducts;
+        setProducts(filtered);
+        setHasMore(false);
         setLoading(false);
       });
-  }, [filters, sortBy, currentPage]);
+  }, [filters, sortBy, currentPage, query]);
 
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    
     // Update URL params
     const params = new URLSearchParams(searchParams);
     if (value) {
@@ -225,7 +279,7 @@ const Products = () => {
           </div>
           
           <div className="mt-3 flex flex-wrap gap-1">
-            {product.colors.slice(0, 3).map((color, colorIndex) => (
+            {product.colors && product.colors.slice(0, 3).map((color, colorIndex) => (
               <span
                 key={colorIndex}
                 className="w-3 h-3 rounded-full border border-gray-300"
@@ -233,7 +287,7 @@ const Products = () => {
                 title={color}
               />
             ))}
-            {product.colors.length > 3 && (
+            {product.colors && product.colors.length > 3 && (
               <span className="text-xs text-gray-500">+{product.colors.length - 3}</span>
             )}
           </div>

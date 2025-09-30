@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
 
-const MONGO_URI = process.env.MOGO_URI || 'mongodb+srv://Trendz:Jayant007@trendz.lgqn2jj.mongodb.net/';
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://Trendz:Jayant007@trendz.lgqn2jj.mongodb.net/';
 
 const sampleProducts = [
   {

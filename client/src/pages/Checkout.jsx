@@ -1,52 +1,138 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import { motion } from 'framer-motion';
-import { ArrowRight, CreditCard, Truck, Shield } from 'lucide-react';
+import { ArrowRight, CreditCard, Truck, Shield, CheckCircle, AlertCircle } from 'lucide-react';
 
 const Checkout = () => {
+  const navigate = useNavigate();
   const { cart, loading, error, clearCart } = useCart();
-  const [address, setAddress] = useState({
-    name: '',
-    email: '',
+  const { user, token } = useAuth();
+  const [shippingAddress, setShippingAddress] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
     phone: '',
     street: '',
     city: '',
     state: '',
-    zip: '',
+    zipCode: '',
     country: 'India',
   });
-  const [payment, setPayment] = useState('card');
+  const [billingAddress, setBillingAddress] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    phone: '',
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'India',
+  });
+  const [sameAsShipping, setSameAsShipping] = useState(true);
+  const [paymentMethod, setPaymentMethod] = useState('card');
   const [placingOrder, setPlacingOrder] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderDetails, setOrderDetails] = useState(null);
   const [formError, setFormError] = useState('');
 
   const subtotal = cart.reduce((sum, item) => {
     const price = item.salePrice || item.price;
     return sum + price * item.quantity;
   }, 0);
+  
+  const shipping = subtotal >= 149900 ? 0 : 9900; // Free shipping over ₹1499
+  const tax = Math.round(subtotal * 0.18); // 18% GST
+  const total = subtotal + shipping + tax;
 
-  const handleInput = (e) => {
-    setAddress({ ...address, [e.target.name]: e.target.value });
+  const handleShippingChange = (e) => {
+    const { name, value } = e.target;
+    setShippingAddress({ ...shippingAddress, [name]: value });
+    
+    if (sameAsShipping) {
+      setBillingAddress({ ...billingAddress, [name]: value });
+    }
+  };
+
+  const handleBillingChange = (e) => {
+    setBillingAddress({ ...billingAddress, [e.target.name]: e.target.value });
+  };
+
+  const handleSameAsShipping = (e) => {
+    setSameAsShipping(e.target.checked);
+    if (e.target.checked) {
+      setBillingAddress({ ...shippingAddress });
+    }
   };
 
   const validateForm = () => {
-    if (!address.name || !address.email || !address.phone || !address.street || !address.city || !address.state || !address.zip) {
-      setFormError('Please fill all required fields.');
-      return false;
+    const requiredShippingFields = ['firstName', 'lastName', 'email', 'phone', 'street', 'city', 'state', 'zipCode'];
+    const requiredBillingFields = sameAsShipping ? [] : requiredShippingFields;
+    
+    for (const field of requiredShippingFields) {
+      if (!shippingAddress[field]?.trim()) {
+        setFormError(`Please fill in shipping ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+        return false;
+      }
     }
+    
+    for (const field of requiredBillingFields) {
+      if (!billingAddress[field]?.trim()) {
+        setFormError(`Please fill in billing ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+        return false;
+      }
+    }
+    
     setFormError('');
     return true;
   };
 
-  const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
+    setFormError('');
+    
     if (!validateForm()) return;
+    if (!token) {
+      setFormError('Please login to place an order');
+      return;
+    }
+    
     setPlacingOrder(true);
-    setTimeout(() => {
-      setOrderPlaced(true);
-      clearCart();
+    
+    try {
+      const orderData = {
+        shippingAddress,
+        billingAddress: sameAsShipping ? shippingAddress : billingAddress,
+        paymentMethod,
+        paymentToken: 'dummy_token' // In real implementation, this would come from Stripe/Razorpay
+      };
+
+      const response = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setOrderDetails(data.order);
+        setOrderPlaced(true);
+        clearCart();
+      } else {
+        throw new Error(data.message || 'Failed to place order');
+      }
+    } catch (error) {
+      console.error('Order placement error:', error);
+      setFormError(error.message || 'Failed to place order. Please try again.');
+    } finally {
       setPlacingOrder(false);
-    }, 1500);
+    }
   };
 
   if (loading) {
@@ -88,14 +174,49 @@ const Checkout = () => {
 
   if (orderPlaced) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <h2 className="text-3xl font-display font-bold text-accent mb-4">
-            Thank you for your order!
-          </h2>
-          <p className="text-gray-600 mb-8">
-            Your order has been placed successfully. You will receive a confirmation email soon.
-          </p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-lg mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-lg p-8 shadow-lg"
+          >
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-6" />
+            <h2 className="text-3xl font-tenor font-bold text-gray-900 mb-4">
+              Order Placed Successfully!
+            </h2>
+            {orderDetails && (
+              <div className="mb-6">
+                <p className="text-lg text-gray-700 mb-2">
+                  Order Number: <span className="font-semibold text-accent">{orderDetails.orderNumber}</span>
+                </p>
+                <p className="text-gray-600">
+                  Total: <span className="font-semibold">₹{orderDetails.total?.toLocaleString()}</span>
+                </p>
+              </div>
+            )}
+            <p className="text-gray-600 mb-8">
+              Thank you for shopping with Trendz! You will receive a confirmation email shortly with your order details and tracking information.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate('/account')}
+                className="btn-primary"
+              >
+                View Order History
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate('/products')}
+                className="btn-secondary"
+              >
+                Continue Shopping
+              </motion.button>
+            </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -112,30 +233,239 @@ const Checkout = () => {
           <div className="lg:col-span-2 bg-white rounded-lg p-6 shadow-sm space-y-6">
             <h2 className="text-xl font-tenor font-bold mb-4">Shipping Address</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input name="name" value={address.name} onChange={handleInput} className="input" placeholder="Full Name*" required />
-              <input name="email" value={address.email} onChange={handleInput} className="input" placeholder="Email*" required type="email" />
-              <input name="phone" value={address.phone} onChange={handleInput} className="input" placeholder="Phone*" required />
-              <input name="street" value={address.street} onChange={handleInput} className="input md:col-span-2" placeholder="Street Address*" required />
-              <input name="city" value={address.city} onChange={handleInput} className="input" placeholder="City*" required />
-              <input name="state" value={address.state} onChange={handleInput} className="input" placeholder="State*" required />
-              <input name="zip" value={address.zip} onChange={handleInput} className="input" placeholder="ZIP/Postal Code*" required />
-              <input name="country" value={address.country} onChange={handleInput} className="input" placeholder="Country*" required />
+              <input 
+                name="firstName" 
+                value={shippingAddress.firstName} 
+                onChange={handleShippingChange} 
+                className="form-input" 
+                placeholder="First Name*" 
+                required 
+              />
+              <input 
+                name="lastName" 
+                value={shippingAddress.lastName} 
+                onChange={handleShippingChange} 
+                className="form-input" 
+                placeholder="Last Name*" 
+                required 
+              />
+              <input 
+                name="email" 
+                value={shippingAddress.email} 
+                onChange={handleShippingChange} 
+                className="form-input" 
+                placeholder="Email*" 
+                type="email" 
+                required 
+              />
+              <input 
+                name="phone" 
+                value={shippingAddress.phone} 
+                onChange={handleShippingChange} 
+                className="form-input" 
+                placeholder="Phone Number*" 
+                required 
+              />
+              <input 
+                name="street" 
+                value={shippingAddress.street} 
+                onChange={handleShippingChange} 
+                className="form-input md:col-span-2" 
+                placeholder="Street Address*" 
+                required 
+              />
+              <input 
+                name="city" 
+                value={shippingAddress.city} 
+                onChange={handleShippingChange} 
+                className="form-input" 
+                placeholder="City*" 
+                required 
+              />
+              <input 
+                name="state" 
+                value={shippingAddress.state} 
+                onChange={handleShippingChange} 
+                className="form-input" 
+                placeholder="State*" 
+                required 
+              />
+              <input 
+                name="zipCode" 
+                value={shippingAddress.zipCode} 
+                onChange={handleShippingChange} 
+                className="form-input" 
+                placeholder="ZIP/Postal Code*" 
+                required 
+              />
+              <select 
+                name="country" 
+                value={shippingAddress.country} 
+                onChange={handleShippingChange} 
+                className="form-input"
+                required
+              >
+                <option value="India">India</option>
+                <option value="United States">United States</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="Canada">Canada</option>
+                <option value="Australia">Australia</option>
+              </select>
             </div>
+            
+            {/* Same as shipping address checkbox */}
+            <div className="flex items-center gap-2 mt-4">
+              <input 
+                type="checkbox" 
+                id="sameAsShipping" 
+                checked={sameAsShipping}
+                onChange={handleSameAsShipping}
+                className="w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
+              />
+              <label htmlFor="sameAsShipping" className="text-sm text-gray-700">
+                Billing address is the same as shipping address
+              </label>
+            </div>
+
+            {/* Billing Address */}
+            {!sameAsShipping && (
+              <div className="mt-6">
+                <h3 className="text-lg font-tenor font-semibold mb-4">Billing Address</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input 
+                    name="firstName" 
+                    value={billingAddress.firstName} 
+                    onChange={handleBillingChange} 
+                    className="form-input" 
+                    placeholder="First Name*" 
+                    required 
+                  />
+                  <input 
+                    name="lastName" 
+                    value={billingAddress.lastName} 
+                    onChange={handleBillingChange} 
+                    className="form-input" 
+                    placeholder="Last Name*" 
+                    required 
+                  />
+                  <input 
+                    name="email" 
+                    value={billingAddress.email} 
+                    onChange={handleBillingChange} 
+                    className="form-input" 
+                    placeholder="Email*" 
+                    type="email" 
+                    required 
+                  />
+                  <input 
+                    name="phone" 
+                    value={billingAddress.phone} 
+                    onChange={handleBillingChange} 
+                    className="form-input" 
+                    placeholder="Phone Number*" 
+                    required 
+                  />
+                  <input 
+                    name="street" 
+                    value={billingAddress.street} 
+                    onChange={handleBillingChange} 
+                    className="form-input md:col-span-2" 
+                    placeholder="Street Address*" 
+                    required 
+                  />
+                  <input 
+                    name="city" 
+                    value={billingAddress.city} 
+                    onChange={handleBillingChange} 
+                    className="form-input" 
+                    placeholder="City*" 
+                    required 
+                  />
+                  <input 
+                    name="state" 
+                    value={billingAddress.state} 
+                    onChange={handleBillingChange} 
+                    className="form-input" 
+                    placeholder="State*" 
+                    required 
+                  />
+                  <input 
+                    name="zipCode" 
+                    value={billingAddress.zipCode} 
+                    onChange={handleBillingChange} 
+                    className="form-input" 
+                    placeholder="ZIP/Postal Code*" 
+                    required 
+                  />
+                  <select 
+                    name="country" 
+                    value={billingAddress.country} 
+                    onChange={handleBillingChange} 
+                    className="form-input"
+                    required
+                  >
+                    <option value="India">India</option>
+                    <option value="United States">United States</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Canada">Canada</option>
+                    <option value="Australia">Australia</option>
+                  </select>
+                </div>
+              </div>
+            )}
             {formError && <p className="text-red-600 text-sm mt-2">{formError}</p>}
 
             {/* Payment Method */}
             <div className="mt-8">
               <h2 className="text-xl font-tenor font-bold mb-4">Payment Method</h2>
-              <div className="flex gap-4">
-                <label className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer ${payment === 'card' ? 'border-accent' : 'border-gray-200'}`}>
-                  <input type="radio" name="payment" value="card" checked={payment === 'card'} onChange={() => setPayment('card')} className="accent-accent" />
-                  <CreditCard className="w-5 h-5" />
-                  Card (Stripe/Razorpay)
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${paymentMethod === 'card' ? 'border-accent bg-accent/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="card" 
+                    checked={paymentMethod === 'card'} 
+                    onChange={(e) => setPaymentMethod(e.target.value)} 
+                    className="w-4 h-4 text-accent border-gray-300 focus:ring-accent"
+                  />
+                  <CreditCard className="w-5 h-5 text-gray-600" />
+                  <span className="text-sm font-medium">Credit/Debit Card</span>
                 </label>
-                <label className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer ${payment === 'cod' ? 'border-accent' : 'border-gray-200'}`}>
-                  <input type="radio" name="payment" value="cod" checked={payment === 'cod'} onChange={() => setPayment('cod')} className="accent-accent" />
-                  <Truck className="w-5 h-5" />
-                  Cash on Delivery
+                <label className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${paymentMethod === 'upi' ? 'border-accent bg-accent/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="upi" 
+                    checked={paymentMethod === 'upi'} 
+                    onChange={(e) => setPaymentMethod(e.target.value)} 
+                    className="w-4 h-4 text-accent border-gray-300 focus:ring-accent"
+                  />
+                  <div className="w-5 h-5 bg-gradient-to-r from-orange-400 to-red-500 rounded" />
+                  <span className="text-sm font-medium">UPI</span>
+                </label>
+                <label className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${paymentMethod === 'netbanking' ? 'border-accent bg-accent/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="netbanking" 
+                    checked={paymentMethod === 'netbanking'} 
+                    onChange={(e) => setPaymentMethod(e.target.value)} 
+                    className="w-4 h-4 text-accent border-gray-300 focus:ring-accent"
+                  />
+                  <div className="w-5 h-5 bg-blue-500 rounded" />
+                  <span className="text-sm font-medium">Net Banking</span>
+                </label>
+                <label className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-accent bg-accent/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="cod" 
+                    checked={paymentMethod === 'cod'} 
+                    onChange={(e) => setPaymentMethod(e.target.value)} 
+                    className="w-4 h-4 text-accent border-gray-300 focus:ring-accent"
+                  />
+                  <Truck className="w-5 h-5 text-gray-600" />
+                  <span className="text-sm font-medium">Cash on Delivery</span>
                 </label>
               </div>
             </div>
@@ -170,11 +500,24 @@ const Checkout = () => {
                   <span>Subtotal</span>
                   <span>₹{subtotal.toLocaleString()}</span>
                 </div>
-                {/* Add shipping/tax/discount logic here if needed */}
+                <div className="flex justify-between text-gray-600">
+                  <span>Shipping</span>
+                  <span>{shipping === 0 ? 'Free' : `₹${shipping.toLocaleString()}`}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>GST (18%)</span>
+                  <span>₹{tax.toLocaleString()}</span>
+                </div>
+                {subtotal >= 149900 && (
+                  <div className="flex justify-between text-green-600 text-sm">
+                    <span>✨ Free shipping applied!</span>
+                    <span>-₹99</span>
+                  </div>
+                )}
                 <div className="border-t pt-3">
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>₹{subtotal.toLocaleString()}</span>
+                    <span>₹{total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

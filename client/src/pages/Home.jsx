@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Play, Heart } from 'lucide-react';
 import HeroSection from '../components/home/HeroSection.jsx';
 import NewArrivals from '../components/home/NewArrivals.jsx';
+import CategorySection from '../components/home/CategorySection.jsx';
 import NewsletterSignup from '../components/home/NewsletterSignup.jsx';
 
 const Home = () => {
@@ -73,14 +74,40 @@ const Home = () => {
         {/* Hero Section */}
         <HeroSection />
 
-        {/* Minimal SALE block as in screenshot 1 */}
-        <div className="w-full flex flex-col items-center justify-center mt-8 mb-16">
-          <div className="text-center">
-            <div className="text-lg tracking-widest mb-2 font-tenor text-black">UP TO 50% OFF</div>
-            <div className="text-6xl font-tenor font-normal mb-2 text-black">SALE</div>
-            <a href="/products?sale=true" className="inline-block mt-2 text-lg underline underline-offset-4 hover:text-accent transition-colors font-tenor text-black">Shop Now</a>
+        {/* Spring 2026 Collection Banner - Oscar de la Renta inspired */}
+        <section className="py-16 bg-white">
+          <div className="container">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center max-w-4xl mx-auto"
+            >
+              <h2 className="text-sm font-tenor tracking-[0.3em] text-accent mb-4">
+                INTRODUCING
+              </h2>
+              <h3 className="text-5xl md:text-6xl font-tenor font-light text-gray-900 mb-6">
+                SPRING 2026
+              </h3>
+              <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+                The Spring 2026 Collection explores the beauty of modern elegance, 
+                with sophisticated silhouettes and exquisite craftsmanship that define luxury fashion.
+              </p>
+              <Link to="/products?collection=spring-2026">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gray-900 text-white px-8 py-4 font-tenor tracking-wide hover:bg-gray-800 transition-colors"
+                >
+                  DISCOVER NOW
+                </motion.button>
+              </Link>
+            </motion.div>
           </div>
-        </div>
+        </section>
+
+        {/* Categories Section */}
+        <CategorySection />
 
         {/* New Arrivals */}
         <NewArrivals />

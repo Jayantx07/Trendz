@@ -1,7 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Play, ArrowRight } from 'lucide-react';
 
 const HeroSection = () => {
   return (
@@ -23,20 +21,25 @@ const HeroSection = () => {
       {/* Overlay */}
       <div className="absolute inset-0 bg-black bg-opacity-40" />
 
-      {/* Content */}
-      <div className="relative z-10 flex items-center justify-center h-full px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-4xl mx-auto">
-          {/* No heading in center anymore */}
+      {/* COUTURE and LUXURY labels at bottom corners */}
+      <div className="absolute bottom-0 left-0 right-0 z-20">
+        {/* Left - COUTURE */}
+        <div className="absolute bottom-12 left-12">
+          <Link to="/products?category=couture" className="group">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-tenor text-white tracking-wider font-light group-hover:text-gray-300 transition-colors duration-300">
+              COUTURE
+            </h2>
+          </Link>
         </div>
-      </div>
-      {/* Split heading: COUTURE (left), LUXURY (right) */}
-      <div className="absolute bottom-8 left-0 w-full flex flex-row justify-between items-center px-6 z-20 md:left-1/2 md:-translate-x-1/2 md:flex-row md:justify-between md:w-full md:px-4">
-        <h1 className="text-2xl md:text-4xl lg:text-5xl font-tenor text-white drop-shadow-lg">
-          COUTURE
-        </h1>
-        <h1 className="text-2xl md:text-4xl lg:text-5xl font-tenor text-white drop-shadow-lg">
-          LUXURY
-        </h1>
+        
+        {/* Right - LUXURY */}
+        <div className="absolute bottom-12 right-12">
+          <Link to="/products?category=luxury" className="group">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-tenor text-white tracking-wider font-light group-hover:text-gray-300 transition-colors duration-300">
+              LUXURY
+            </h2>
+          </Link>
+        </div>
       </div>
     </section>
   );

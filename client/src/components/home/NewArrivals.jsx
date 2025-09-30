@@ -178,7 +178,7 @@ const NewArrivals = () => {
                   </div>
                   
                   <div className="mt-3 flex flex-wrap gap-1">
-                    {product.colors.slice(0, 3).map((color, colorIndex) => (
+                    {product.colors && product.colors.slice(0, 3).map((color, colorIndex) => (
                       <span
                         key={colorIndex}
                         className="w-3 h-3 rounded-full border border-gray-300"
@@ -186,7 +186,7 @@ const NewArrivals = () => {
                         title={color}
                       />
                     ))}
-                    {product.colors.length > 3 && (
+                    {product.colors && product.colors.length > 3 && (
                       <span className="text-xs text-gray-500">+{product.colors.length - 3}</span>
                     )}
                   </div>

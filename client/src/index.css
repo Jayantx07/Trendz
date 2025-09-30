@@ -1,4 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Exo:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+
+/* Fallback fonts if Google Fonts fail to load */
+@font-face {
+  font-family: 'Tenor Sans Fallback';
+  src: local('Arial'), local('Helvetica'), local('sans-serif');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Playfair Display Fallback';
+  src: local('Georgia'), local('Times'), local('serif');
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
