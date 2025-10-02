@@ -65,10 +65,13 @@ const Navbar = () => {
   const cartItemCount = (cartItems || []).reduce((total, item) => total + item.quantity, 0);
   const wishlistCount = (wishlistItems || []).length;
 
-  // Dynamic classes for color and background - Oscar de la Renta style
-  const navBg = isScrolled ? 'bg-white shadow-sm' : 'bg-transparent';
-  const linkColor = isScrolled ? 'text-gray-900 hover:text-accent' : 'text-white hover:text-white/80';
-  const logoSrc = isScrolled ? '/images/Logo black.png' : '/images/Logo white.png';
+  // Dynamic classes for color and background
+  // Home ('/') keeps transparent-at-top behavior; all other routes use solid (black variant) at top
+  const onHome = location.pathname === '/';
+  const effectiveScrolled = onHome ? isScrolled : true;
+  const navBg = effectiveScrolled ? 'bg-white shadow-sm' : 'bg-transparent';
+  const linkColor = effectiveScrolled ? 'text-gray-900 hover:text-accent' : 'text-white hover:text-white/80';
+  const logoSrc = effectiveScrolled ? '/images/Logo black.png' : '/images/Logo white.png';
 
   const submitSearch = (e) => {
     e && e.preventDefault();
