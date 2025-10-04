@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Heart, 
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
+import { getProductBySlug, localProducts, slugify } from '../utils/localProducts.js';
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -27,47 +29,64 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showZoom, setShowZoom] = useState(false);
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
 
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetch(`/api/products/${slug}`)
-      .then(res => {
-        if (!res.ok) throw new Error('Product not found');
-        return res.json();
-      })
-      .then(data => {
+    let isMounted = true;
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`/api/products/${slug}`);
+        if (!res.ok) throw new Error('api_unavailable');
+        const data = await res.json();
+        if (!isMounted) return;
         setProduct(data);
-        // Set default color/size if available
         if (data.variants && data.variants.length > 0) {
           setSelectedColor(data.variants[0].color?.name || '');
           setSelectedSize(data.variants[0].size || '');
         }
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message || 'Error fetching product');
-        setLoading(false);
-      });
+      } catch (e) {
+        // Fallback to local catalog
+        const local = getProductBySlug(slug);
+        if (local) {
+          if (!isMounted) return;
+          setProduct(local);
+          // Set simple defaults
+          setSelectedColor(local.colors?.[0] || '');
+          setSelectedSize(local.sizes?.[0] || '');
+          setError(null);
+        } else {
+          if (!isMounted) return;
+          setError('Product not found');
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
   }, [slug]);
 
+  // Helpers for dates (computed each render)
+  const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  const now = Date.now();
+  const estStart = fmtDate(now + 3 * 24 * 60 * 60 * 1000);
+  const estEnd = fmtDate(now + 7 * 24 * 60 * 60 * 1000);
+  const fastDispatch = fmtDate(now + 2 * 24 * 60 * 60 * 1000);
+  const currentSlug = product ? slugify(product.name || slug) : slug;
+
   const handleAddToCart = () => {
-    if (!selectedColor || !selectedSize) {
-      alert('Please select both color and size');
-      return;
-    }
-    
     const productWithOptions = {
       ...product,
       selectedOptions: {
         color: selectedColor,
-        size: selectedSize
-      }
+        size: selectedSize,
+      },
     };
-    
     addToCart(productWithOptions, quantity);
   };
 
@@ -135,7 +154,7 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container py-8">
+      <div className="container pt-16 pb-8">
         {/* Breadcrumb */}
         <nav className="mb-8">
           <ol className="flex items-center space-x-2 text-sm text-gray-600">
@@ -172,13 +191,13 @@ const ProductDetail = () => {
                 onClick={prevImage}
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full transition-colors"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-5 h-5 text-black" />
               </button>
               <button
                 onClick={nextImage}
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full transition-colors"
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-5 h-5 text-black" />
               </button>
 
               {/* Zoom Icon */}
@@ -186,7 +205,7 @@ const ProductDetail = () => {
                 onClick={() => setShowZoom(true)}
                 className="absolute top-4 right-4 bg-white/80 hover:bg-white p-2 rounded-full transition-colors"
               >
-                <ZoomIn className="w-5 h-5" />
+                <ZoomIn className="w-5 h-5 text-black" />
               </button>
 
               {/* Badges */}
@@ -242,6 +261,7 @@ const ProductDetail = () => {
               <h1 className="text-3xl font-tenor font-bold text-gray-900 mb-2">
                 {product.name}
               </h1>
+                <p className="text-gray-600 mt-2 text-sm md:text-base">{(product.description || "").slice(0, 140)}{(product.description || "").length > 140 ? "…" : ""}</p>
               
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center">
@@ -275,8 +295,8 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* Description */}
-            <div>
+            {/* Description (moved under title; hide long block here) */}
+            <div className="hidden">
               <p className="text-gray-600 leading-relaxed">
                 {product.description}
               </p>
@@ -293,7 +313,7 @@ const ProductDetail = () => {
                     className={`w-8 h-8 rounded-full border-2 transition-colors ${
                       selectedColor === color 
                         ? 'border-accent' 
-                        : 'border-gray-300 hover:border-gray-400'
+                        : 'border-black bg-black text-white hover:opacity-90'
                     }`}
                     style={{ backgroundColor: color.toLowerCase() }}
                     title={color}
@@ -328,14 +348,14 @@ const ProductDetail = () => {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-8 h-8 border border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors"
+                  className="w-8 h-8 border border-gray-300 rounded-lg flex items-center justify-center text-black hover:border-gray-400 transition-colors"
                 >
                   -
                 </button>
-                <span className="w-12 text-center font-medium">{quantity}</span>
+                <span className="w-12 text-center font-medium text-black">{quantity}</span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="w-8 h-8 border border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400 transition-colors"
+                  className="w-8 h-8 border border-gray-300 rounded-lg flex items-center justify-center text-black hover:border-gray-400 transition-colors"
                 >
                   +
                 </button>
@@ -359,8 +379,8 @@ const ProductDetail = () => {
                 whileTap={{ scale: 0.95 }}
                 className={`p-4 rounded-lg border transition-colors ${
                   isInWishlist(product.id)
-                    ? 'border-red-300 bg-red-50 text-red-600'
-                    : 'border-gray-300 hover:border-gray-400'
+                    ? 'border-black bg-black text-white hover:opacity-90'
+                    : 'border-black bg-black text-white hover:opacity-90'
                 }`}
               >
                 <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
@@ -370,7 +390,7 @@ const ProductDetail = () => {
                 onClick={handleShare}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-4 rounded-lg border border-gray-300 hover:border-gray-400 transition-colors"
+                className="p-4 rounded-lg border border-black bg-black text-white hover:opacity-90 transition-colors"
               >
                 <Share2 className="w-5 h-5" />
               </motion.button>
@@ -379,7 +399,7 @@ const ProductDetail = () => {
             {/* Shipping Info */}
             <div className="bg-gray-50 rounded-lg p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <Truck className="w-5 h-5 text-accent" />
+                <Truck className="w-5 h-5 text-black" />
                 <div>
                   <p className="font-medium text-gray-900">Free Shipping</p>
                   <p className="text-sm text-gray-600">3-5 business days</p>
@@ -387,7 +407,7 @@ const ProductDetail = () => {
               </div>
               
               <div className="flex items-center gap-3">
-                <RotateCcw className="w-5 h-5 text-accent" />
+                <RotateCcw className="w-5 h-5 text-black" />
                 <div>
                   <p className="font-medium text-gray-900">Free Returns</p>
                   <p className="text-sm text-gray-600">30 days</p>
@@ -395,7 +415,7 @@ const ProductDetail = () => {
               </div>
               
               <div className="flex items-center gap-3">
-                <Shield className="w-5 h-5 text-accent" />
+                <Shield className="w-5 h-5 text-black" />
                 <div>
                   <p className="font-medium text-gray-900">Secure Payment</p>
                   <p className="text-sm text-gray-600">SSL encrypted</p>

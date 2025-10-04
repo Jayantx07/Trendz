@@ -1,24 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const Contact = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+
+  const adminEmail = 'customerservice@trendz.com';
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const subject = `Inquiry from ${name || 'Trendz visitor'}`;
+    const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
+    window.location.href = `mailto:${adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
   return (
-    <div className="container py-12">
+    <div className="container pt-16 pb-12">
       <h1 className="text-4xl font-tenor text-gray-900 mb-4">Contact</h1>
       <p className="text-gray-600 max-w-3xl mb-6">
         Reach us using the form or contact details below. This is a placeholder page; add your actual
         contact form and info later.
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <p className="text-gray-700"><strong>Email:</strong> hello@example.com</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Contact details */}
+        <div className="space-y-3">
+          <p className="text-gray-700"><strong>Email:</strong> <a className="underline" href={`mailto:${adminEmail}`}>{adminEmail}</a></p>
           <p className="text-gray-700"><strong>Phone:</strong> +91 90000 00000</p>
-          <p className="text-gray-700"><strong>Address:</strong> Your store address</p>
+          <p className="text-gray-700"><strong>Address:</strong> Sitapura Jaipur High Street, Rajasthan, India</p>
+          <div className="rounded-lg overflow-hidden border border-gray-200 mt-4">
+            <iframe
+              title="Trendz Location"
+              src="https://www.google.com/maps?q=Sitapura%20Jaipur%20High%20Street,%20Rajasthan,%20India&output=embed"
+              className="w-full h-64"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
         </div>
-        <form className="space-y-3">
-          <input className="w-full border border-gray-300 rounded px-3 py-2" placeholder="Name" />
-          <input className="w-full border border-gray-300 rounded px-3 py-2" placeholder="Email" />
-          <textarea className="w-full border border-gray-300 rounded px-3 py-2" rows={4} placeholder="Message" />
-          <button type="button" className="btn-primary rounded-[3px]">Send</button>
+
+        {/* Contact form */}
+        <form className="space-y-3" onSubmit={handleSubmit}>
+          <input className="w-full border border-gray-300 rounded px-3 py-2" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="w-full border border-gray-300 rounded px-3 py-2" placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <textarea className="w-full border border-gray-300 rounded px-3 py-2" rows={5} placeholder="Message" value={message} onChange={(e) => setMessage(e.target.value)} />
+          <button type="submit" className="btn-primary rounded-[3px]">Send</button>
         </form>
       </div>
     </div>

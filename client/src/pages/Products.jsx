@@ -12,6 +12,8 @@ import {
   Eye,
   Star
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { slugify } from '../utils/localProducts.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
 
@@ -25,6 +27,7 @@ const Products = () => {
   const [sortBy, setSortBy] = useState('relevance');
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const navigate = useNavigate();
 
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
@@ -170,7 +173,10 @@ const Products = () => {
     }
   };
 
-  const renderProductCard = (product) => (
+  const renderProductCard = (product) => {
+    const slug = slugify(product.name || product.id);
+    const go = () => navigate(`/products/${slug}`);
+    return (
     <motion.div
       key={product.id}
       initial={{ opacity: 0, y: 20 }}
@@ -178,7 +184,7 @@ const Products = () => {
       className="product-card-wrapper group"
     >
       <div className="product-card">
-        <div className="product-image-container">
+        <div className="product-image-container cursor-pointer" onClick={go}>
           <img
             src={product.image}
             alt={product.name}
@@ -219,7 +225,7 @@ const Products = () => {
               <ShoppingBag className="w-4 h-4" />
             </motion.button>
             
-            <a href={`/product/${product.id}`}>
+            <button onClick={go}>
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
@@ -227,7 +233,7 @@ const Products = () => {
               >
                 <Eye className="w-4 h-4" />
               </motion.button>
-            </a>
+            </button>
           </div>
         </div>
 
@@ -239,9 +245,9 @@ const Products = () => {
           </div>
           
           <h3 className="product-title">
-            <a href={`/product/${product.id}`} className="hover:text-accent transition-colors">
+            <button onClick={go} className="hover:text-accent transition-colors">
               {product.name}
-            </a>
+            </button>
           </h3>
           
           {/* Rating */}
@@ -295,8 +301,12 @@ const Products = () => {
       </div>
     </motion.div>
   );
+  };
 
-  const renderProductList = (product) => (
+  const renderProductList = (product) => {
+    const slug = slugify(product.name || product.id);
+    const go = () => navigate(`/products/${slug}`);
+    return (
     <motion.div
       key={product.id}
       initial={{ opacity: 0, y: 20 }}
@@ -319,9 +329,9 @@ const Products = () => {
                 {product.category}
               </span>
               <h3 className="text-lg font-tenor text-gray-900 mt-1">
-                <a href={`/product/${product.id}`} className="hover:text-accent transition-colors">
+                <button onClick={go} className="hover:text-accent transition-colors">
                   {product.name}
-                </a>
+                </button>
               </h3>
               <p className="text-sm text-gray-600 mt-2">{product.description}</p>
               
@@ -385,6 +395,8 @@ const Products = () => {
       </div>
     </motion.div>
   );
+
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">

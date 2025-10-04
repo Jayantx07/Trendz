@@ -12,38 +12,7 @@ import {
 } from 'lucide-react';
 
 const Footer = () => {
-  const footerLinks = {
-    'Contact Us': [
-      { name: 'Live Chat', href: '/contact/chat' },
-      { name: 'Email Us', href: '/contact/email' },
-      { name: 'Call Us', href: '/contact/phone' },
-      { name: 'Request an Appointment', href: '/appointment' },
-      { name: 'Find a Store', href: '/stores' }
-    ],
-    'Customer Care': [
-      { name: 'Client Services', href: '/services/client' },
-      { name: 'Returns & Exchanges', href: '/returns' },
-      { name: 'Shipping', href: '/shipping' },
-      { name: 'Personal Shopping', href: '/services/personal-shopping' },
-      { name: 'Bridal Services', href: '/services/bridal' },
-      { name: 'Payment & Financing', href: '/payment' },
-      { name: 'International Orders', href: '/international' }
-    ],
-    'Follow Us': [
-      { name: 'Instagram', href: 'https://instagram.com/trendz', icon: Instagram },
-      { name: 'YouTube', href: 'https://youtube.com/trendz', icon: Youtube },
-      { name: 'Facebook', href: 'https://facebook.com/trendz', icon: Facebook },
-      { name: 'LinkedIn', href: 'https://linkedin.com/company/trendz', icon: Instagram }
-    ],
-    'Legal': [
-      { name: 'Terms of Use', href: '/legal/terms' },
-      { name: 'Site Accessibility', href: '/legal/accessibility' },
-      { name: 'Privacy Policy', href: '/legal/privacy' },
-      { name: 'Exercising Your Privacy Rights', href: '/legal/privacy-rights' },
-      { name: 'Do Not Sell/Share My Information', href: '/legal/do-not-sell' },
-      { name: 'Cookies Settings', href: '/legal/cookies' }
-    ]
-  };
+  const footerLinks = {};
 
   const socialLinks = [
     { name: 'Instagram', href: 'https://instagram.com/trendz', icon: Instagram },
@@ -53,9 +22,9 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-white text-black">
+    <footer className="bg-white text-black border-t-2 border-black">
       {/* Newsletter Section */}
-      <section className="border-b border-gray-800">
+      <section className="border-b border-gray-800 hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
@@ -145,7 +114,7 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-6">
               <span className="text-sm text-neutral-800">Follow Us</span>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 hidden">
                 {socialLinks.map((social) => (
                   <motion.a
                     key={social.name}
@@ -163,7 +132,7 @@ const Footer = () => {
             </div>
 
             {/* Language/Country Selector */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 hidden">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-neutral-800">Shipping to:</span>
                 <select className="bg-gray-800 border border-gray-600 rounded px-3 py-1 text-sm text-white">
