@@ -8,7 +8,7 @@ import { useWishlist } from '../../context/WishlistContext.jsx';
 
 const MAIN_LINKS = [
   { name: 'HOME', href: '/' },
-  // SHOP handled separately with dropdown
+  // PRODUCT handled separately with dropdown (was SHOP)
   { name: 'CONTACT', href: '/contact' },
   { name: 'ABOUT', href: '/about' },
 ];
@@ -116,7 +116,7 @@ const Navbar = () => {
                 </Link>
               ))}
 
-              {/* SHOP dropdown */}
+              {/* PRODUCT dropdown (renamed from SHOP) */}
               <div
                 className="relative"
                 onMouseEnter={() => {
@@ -133,11 +133,11 @@ const Navbar = () => {
               >
                 <button
                   className={`flex items-center gap-1 text-xs font-tenor tracking-wider transition-colors ${linkColor}`}
-                  onClick={() => setShopOpen((v) => !v)}
+                  onClick={() => navigate('/products')}
                   aria-haspopup="menu"
                   aria-expanded={shopOpen}
                 >
-                  SHOP <ChevronDown className="w-4 h-4" />
+                  PRODUCT <ChevronDown className="w-4 h-4" />
                 </button>
                 <AnimatePresence>
                   {shopOpen && (
@@ -277,9 +277,16 @@ const Navbar = () => {
                   </Link>
                 ))}
 
-                {/* SHOP dropdown items shown inline on mobile */}
+                {/* PRODUCT dropdown items shown inline on mobile (renamed from SHOP) */}
                 <div className="pt-2">
-                  <div className="px-3 py-2 text-xs text-gray-500">Shop by Categories</div>
+                  <div className="px-3 py-2 text-xs text-gray-500">Browse Products</div>
+                  <Link
+                    to="/products"
+                    className="block px-5 py-2 text-sm text-gray-900 hover:text-accent"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    All Products
+                  </Link>
                   {SHOP_CATEGORIES.map((c) => (
                     <Link
                       key={c.value}

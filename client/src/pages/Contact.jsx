@@ -15,10 +15,10 @@ const Contact = () => {
   };
 
   return (
-    <div className="container pt-16 pb-12">
+    <div className="container pt-24 md:pt-28 pb-12">
       <h1 className="text-4xl font-tenor text-gray-900 mb-4">Contact</h1>
       <p className="text-gray-600 max-w-3xl mb-6">
-        Reach us using the form or contact details below. This is a placeholder page; add your actual
+        Reach us using the form or contact details below. This is a placeholder page, add your actual
         contact form and info later.
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

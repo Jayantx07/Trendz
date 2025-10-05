@@ -13,7 +13,7 @@ import {
   Star
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { slugify } from '../utils/localProducts.js';
+import { slugify, localProducts } from '../utils/localProducts.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
 
@@ -77,56 +77,31 @@ const Products = () => {
       })
       .catch(err => {
         console.warn('API not available, using mock data:', err.message);
-        // Use mock data as fallback
-        const mockProducts = [
-          {
-            id: 1,
-            name: 'Silk Evening Gown',
-            price: 2800,
-            salePrice: null,
-            image: '/images/products/evening-gown-1.jpg',
-            category: 'Evening',
-            isNew: true,
-            colors: ['Black', 'Navy', 'Burgundy'],
-            sizes: ['XS', 'S', 'M', 'L', 'XL']
-          },
-          {
-            id: 2,
-            name: 'Floral Day Dress',
-            price: 1200,
-            salePrice: 960,
-            image: '/images/products/day-dress-1.jpg',
-            category: 'Day',
-            isNew: true,
-            colors: ['Blue', 'Pink', 'White'],
-            sizes: ['XS', 'S', 'M', 'L']
-          },
-          {
-            id: 3,
-            name: 'Signature Handbag',
-            price: 1800,
-            salePrice: null,
-            image: '/images/products/handbag-1.jpg',
-            category: 'Accessories',
-            isNew: true,
-            colors: ['Black', 'Brown', 'Cream'],
-            sizes: ['One Size']
-          },
-          {
-            id: 4,
-            name: 'Embroidered Blouse',
-            price: 850,
-            salePrice: null,
-            image: '/images/products/blouse-1.jpg',
-            category: 'Day',
-            isNew: true,
-            colors: ['White', 'Ivory', 'Pale Blue'],
-            sizes: ['XS', 'S', 'M', 'L', 'XL']
-          }
-        ];
-        const filtered = query
-          ? mockProducts.filter(p => (`${p.name} ${p.category}`).toLowerCase().includes(query.toLowerCase()))
-          : mockProducts;
+        // Build products from local catalog
+        const localAsProducts = (localProducts || []).map((p, idx) => ({
+          id: p.id || idx + 1,
+          name: p.name,
+          price: p.price,
+          salePrice: p.salePrice || null,
+          image: (p.images && p.images[0]) || '',
+          category: p.category,
+          isNew: p.isNew || false,
+          onSale: p.onSale || false,
+          colors: p.colors || [],
+          sizes: p.sizes || [],
+          rating: p.rating || 4,
+          reviewCount: p.reviewCount || 0,
+        }));
+
+        // Apply simple filtering for query and selected filters
+        const byQuery = (list) => query
+          ? list.filter(p => (`${p.name} ${p.category}`).toLowerCase().includes(query.toLowerCase()))
+          : list;
+        const byCategory = (list) => filters.category
+          ? list.filter(p => String(p.category).toLowerCase() === String(filters.category).toLowerCase())
+          : list;
+
+        const filtered = byCategory(byQuery(localAsProducts));
         setProducts(filtered);
         setHasMore(false);
         setLoading(false);
@@ -212,7 +187,7 @@ const Products = () => {
               className="product-wishlist"
             >
               <Heart 
-                className={`w-4 h-4 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : ''}`} 
+                className={`w-4 h-4 text-black ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : ''}`} 
               />
             </motion.button>
             
@@ -222,7 +197,7 @@ const Products = () => {
               onClick={() => handleAddToCart(product)}
               className="product-wishlist"
             >
-              <ShoppingBag className="w-4 h-4" />
+              <ShoppingBag className="w-4 h-4 text-black" />
             </motion.button>
             
             <button onClick={go}>
@@ -231,7 +206,7 @@ const Products = () => {
                 whileTap={{ scale: 0.95 }}
                 className="product-wishlist"
               >
-                <Eye className="w-4 h-4" />
+                <Eye className="w-4 h-4 text-black" />
               </motion.button>
             </button>
           </div>
@@ -400,7 +375,7 @@ const Products = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container py-8">
+      <div className="container pt-24 md:pt-28 pb-12">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-tenor font-bold text-gray-900 mb-2">
@@ -418,16 +393,16 @@ const Products = () => {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 text-gray-700 hover:text-accent transition-colors"
+                className="flex items-center gap-2 text-black hover:text-accent transition-colors"
               >
-                <Filter className="w-4 h-4" />
+                <Filter className="w-4 h-4 text-black" />
                 <span>Filters</span>
-                {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {showFilters ? <ChevronUp className="w-4 h-4 text-black" /> : <ChevronDown className="w-4 h-4 text-black" />}
               </button>
               
               <button
                 onClick={clearFilters}
-                className="text-sm text-gray-500 hover:text-accent transition-colors"
+                className="text-sm text-black hover:text-accent transition-colors"
               >
                 Clear All
               </button>
@@ -438,29 +413,32 @@ const Products = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-accent text-white' : 'text-gray-500 hover:text-accent'}`}
+                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-accent text-white' : 'text-black hover:text-accent'}`}
                 >
-                  <Grid className="w-4 h-4" />
+                  <Grid className="w-4 h-4 text-black" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-accent text-white' : 'text-gray-500 hover:text-accent'}`}
+                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-accent text-white' : 'text-black hover:text-accent'}`}
                 >
-                  <List className="w-4 h-4" />
+                  <List className="w-4 h-4 text-black" />
                 </button>
               </div>
               
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-accent focus:outline-none"
-              >
-                <option value="relevance">Relevance</option>
-                <option value="newest">Newest</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="rating">Highest Rated</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="appearance-none border border-gray-300 rounded-lg px-3 pr-10 py-2 text-sm text-black focus:border-accent focus:outline-none"
+                >
+                  <option value="relevance">Relevance</option>
+                  <option value="newest">Newest</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="rating">Highest Rated</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
+              </div>
             </div>
           </div>
 
@@ -476,51 +454,60 @@ const Products = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {/* Category */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-black mb-2">
                       Category
                     </label>
-                    <select
-                      value={filters.category}
-                      onChange={(e) => handleFilterChange('category', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-accent focus:outline-none"
-                    >
-                      <option value="">All Categories</option>
-                      <option value="Evening">Evening</option>
-                      <option value="Day">Day</option>
-                      <option value="Bridal">Bridal</option>
-                      <option value="Accessories">Accessories</option>
-                      <option value="Jewelry">Jewelry</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={filters.category}
+                        onChange={(e) => handleFilterChange('category', e.target.value)}
+                        className="appearance-none w-full border border-gray-300 rounded-lg px-3 pr-10 py-2 text-sm text-black focus:border-accent focus:outline-none"
+                      >
+                        <option value="">All Categories</option>
+                        <option value="Gowns">Gowns</option>
+                        <option value="Kurtas">Kurtas</option>
+                        <option value="Outfits">Outfits</option>
+                        <option value="One Piece">One Piece</option>
+                        <option value="Skirts">Skirts</option>
+                        <option value="Toppers">Toppers</option>
+                        <option value="Accessories">Accessories</option>
+                        <option value="Bottoms">Bottoms</option>
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
+                    </div>
                   </div>
 
                   {/* Price Range */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-black mb-2">
                       Price Range
                     </label>
-                    <select
-                      value={filters.priceRange}
-                      onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-accent focus:outline-none"
-                    >
-                      <option value="">All Prices</option>
-                      <option value="0-500">Under ₹500</option>
-                      <option value="500-1000">₹500 - ₹1,000</option>
-                      <option value="1000-2000">₹1,000 - ₹2,000</option>
-                      <option value="2000-5000">₹2,000 - ₹5,000</option>
-                      <option value="5000-999999">Over ₹5,000</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={filters.priceRange}
+                        onChange={(e) => handleFilterChange('priceRange', e.target.value)}
+                        className="appearance-none w-full border border-gray-300 rounded-lg px-3 pr-10 py-2 text-sm text-black focus:border-accent focus:outline-none"
+                      >
+                        <option value="">All Prices</option>
+                        <option value="0-500">Under ₹500</option>
+                        <option value="500-1000">₹500 - ₹1,000</option>
+                        <option value="1000-2000">₹1,000 - ₹2,000</option>
+                        <option value="2000-5000">₹2,000 - ₹5,000</option>
+                        <option value="5000-999999">Over ₹5,000</option>
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
+                    </div>
                   </div>
 
                   {/* Color */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-black mb-2">
                       Color
                     </label>
                     <select
                       value={filters.color}
                       onChange={(e) => handleFilterChange('color', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-accent focus:outline-none"
+                      className="appearance-none w-full border border-gray-300 rounded-lg px-3 pr-10 py-2 text-sm text-black focus:border-accent focus:outline-none"
                     >
                       <option value="">All Colors</option>
                       <option value="Black">Black</option>
@@ -533,59 +520,63 @@ const Products = () => {
                       <option value="Gold">Gold</option>
                       <option value="Silver">Silver</option>
                     </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
                   </div>
 
                   {/* Size */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-black mb-2">
                       Size
                     </label>
-                    <select
-                      value={filters.size}
-                      onChange={(e) => handleFilterChange('size', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-accent focus:outline-none"
-                    >
-                      <option value="">All Sizes</option>
-                      <option value="XS">XS</option>
-                      <option value="S">S</option>
-                      <option value="M">M</option>
-                      <option value="L">L</option>
-                      <option value="XL">XL</option>
-                      <option value="One Size">One Size</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={filters.size}
+                        onChange={(e) => handleFilterChange('size', e.target.value)}
+                        className="appearance-none w-full border border-gray-300 rounded-lg px-3 pr-10 py-2 text-sm text-black focus:border-accent focus:outline-none"
+                      >
+                        <option value="">All Sizes</option>
+                        <option value="XS">XS</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="One Size">One Size</option>
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
+                    </div>
                   </div>
                 </div>
 
                 {/* Checkboxes */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-black">
                     <input
                       type="checkbox"
                       checked={filters.onSale}
                       onChange={(e) => handleFilterChange('onSale', e.target.checked)}
                       className="rounded border-gray-300 text-accent focus:ring-accent"
                     />
-                    <span className="text-sm text-gray-700">On Sale</span>
+                    <span className="text-sm">On Sale</span>
                   </label>
                   
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-black">
                     <input
                       type="checkbox"
                       checked={filters.inStock}
                       onChange={(e) => handleFilterChange('inStock', e.target.checked)}
                       className="rounded border-gray-300 text-accent focus:ring-accent"
                     />
-                    <span className="text-sm text-gray-700">In Stock</span>
+                    <span className="text-sm">In Stock</span>
                   </label>
                   
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-black">
                     <input
                       type="checkbox"
                       checked={filters.newArrival}
                       onChange={(e) => handleFilterChange('newArrival', e.target.checked)}
                       className="rounded border-gray-300 text-accent focus:ring-accent"
                     />
-                    <span className="text-sm text-gray-700">New Arrivals</span>
+                    <span className="text-sm">New Arrivals</span>
                   </label>
                 </div>
               </motion.div>

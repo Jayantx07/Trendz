@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from './components/layout/Navbar.jsx';
 import Footer from './components/layout/Footer.jsx';
 import ApiStatus from './components/common/ApiStatus.jsx';
+import ScrollToTop from './components/common/ScrollToTop.jsx';
 import Home from './pages/Home.jsx';
 import Products from './pages/Products.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
@@ -31,6 +32,7 @@ function App() {
             <div className="min-h-screen flex flex-col">
               <ApiStatus />
               <Navbar />
+              <ScrollToTop />
               <main className="flex-1">
                 <AnimatePresence mode="wait">
                   <Routes>
