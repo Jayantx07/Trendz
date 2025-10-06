@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { slugify, localProducts } from '../utils/localProducts.js';
+import { apiFetch } from '../utils/api.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
 
@@ -128,7 +129,7 @@ const Products = () => {
     params.append('page', currentPage);
     params.append('limit', 12);
 
-    fetch(`/api/products?${params.toString()}`, { signal: controller.signal })
+    apiFetch(`/products?${params.toString()}`, { signal: controller.signal })
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch products');
         return res.json();
