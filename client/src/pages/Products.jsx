@@ -47,9 +47,72 @@ const Products = () => {
 
   const query = searchParams.get('q') || '';
 
+  // Map high-level categories (from navbar) to actual catalog categories
+  const categoryAliases = {
+    Dresses: ['Gowns', 'One Piece', 'Outfits', 'Skirts'],
+    Tops: ['Toppers'],
+    Bottoms: ['Bottoms'],
+    Kurtas: ['Kurtas'],
+    Accessories: ['Accessories'],
+  };
+  const resolveCategoryList = (val) => {
+    if (!val) return null;
+    const alias = categoryAliases[val];
+    if (alias && alias.length) return alias;
+    return [val];
+  };
+
+  // Keep filters.category in sync with URL (?category=...) so navigating via navbar updates instantly
+  useEffect(() => {
+    const urlCategory = searchParams.get('category') || '';
+    if (urlCategory !== filters.category) {
+      setFilters((prev) => ({ ...prev, category: urlCategory }));
+      setCurrentPage(1);
+    }
+    // Also sync q from URL if needed in future; for now, main effect reads `query` directly
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   useEffect(() => {
     setLoading(true);
     setError(null);
+
+    // Build local catalog list once for instant render
+    const localAsProducts = (localProducts || []).map((p, idx) => ({
+      id: p.id || idx + 1,
+      name: p.name,
+      price: p.price,
+      salePrice: p.salePrice || null,
+      image: (p.images && p.images[0]) || '',
+      category: p.category,
+      isNew: p.isNew || false,
+      onSale: p.onSale || false,
+      colors: p.colors || [],
+      sizes: p.sizes || [],
+      rating: p.rating || 4,
+      reviewCount: p.reviewCount || 0,
+    }));
+
+    // Apply lightweight filtering locally for immediate display
+    const byQuery = (list) => query
+      ? list.filter(p => (`${p.name} ${p.category}`).toLowerCase().includes(query.toLowerCase()))
+      : list;
+    const byCategory = (list) => {
+      const cats = resolveCategoryList(filters.category);
+      if (!cats) return list;
+      const acceptable = cats.map((c) => String(c).toLowerCase());
+      const filtered = list.filter(p => acceptable.includes(String(p.category).toLowerCase()));
+      // If alias produced nothing (e.g., mismatch), show all instead of empty
+      return filtered.length > 0 ? filtered : list;
+    };
+    const locallyFiltered = byCategory(byQuery(localAsProducts));
+    setProducts(locallyFiltered.length > 0 ? locallyFiltered : localAsProducts);
+    setHasMore(false);
+
+    // If API available, enhance results; abort quickly to avoid delays
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 600);
+
     // Build query string from filters
     const params = new URLSearchParams();
     if (query) params.append('q', query);
@@ -65,47 +128,28 @@ const Products = () => {
     params.append('page', currentPage);
     params.append('limit', 12);
 
-    fetch(`/api/products?${params.toString()}`)
+    fetch(`/api/products?${params.toString()}`, { signal: controller.signal })
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch products');
         return res.json();
       })
       .then(data => {
-        setProducts(data.products || []);
-        setHasMore(data.pagination?.hasNext || false);
-        setLoading(false);
+        clearTimeout(timeoutId);
+        const apiList = Array.isArray(data?.products) ? data.products : [];
+        if (apiList.length > 0) {
+          setProducts(apiList);
+          setHasMore(Boolean(data.pagination?.hasNext));
+        }
       })
-      .catch(err => {
-        console.warn('API not available, using mock data:', err.message);
-        // Build products from local catalog
-        const localAsProducts = (localProducts || []).map((p, idx) => ({
-          id: p.id || idx + 1,
-          name: p.name,
-          price: p.price,
-          salePrice: p.salePrice || null,
-          image: (p.images && p.images[0]) || '',
-          category: p.category,
-          isNew: p.isNew || false,
-          onSale: p.onSale || false,
-          colors: p.colors || [],
-          sizes: p.sizes || [],
-          rating: p.rating || 4,
-          reviewCount: p.reviewCount || 0,
-        }));
+      .catch(() => {
+        // Keep local results if API errors or times out
+      })
+      .finally(() => setLoading(false));
 
-        // Apply simple filtering for query and selected filters
-        const byQuery = (list) => query
-          ? list.filter(p => (`${p.name} ${p.category}`).toLowerCase().includes(query.toLowerCase()))
-          : list;
-        const byCategory = (list) => filters.category
-          ? list.filter(p => String(p.category).toLowerCase() === String(filters.category).toLowerCase())
-          : list;
-
-        const filtered = byCategory(byQuery(localAsProducts));
-        setProducts(filtered);
-        setHasMore(false);
-        setLoading(false);
-      });
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, [filters, sortBy, currentPage, query]);
 
   const handleFilterChange = (key, value) => {
@@ -164,6 +208,7 @@ const Products = () => {
             src={product.image}
             alt={product.name}
             className="product-image"
+            loading="lazy"
           />
           
           {/* Badges */}
@@ -294,6 +339,7 @@ const Products = () => {
             src={product.image}
             alt={product.name}
             className="w-full h-full object-cover rounded-lg"
+            loading="lazy"
           />
         </div>
         

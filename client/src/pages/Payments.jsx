@@ -18,30 +18,64 @@ const Payments = () => {
     await updateProfile({ paymentMethods: next });
   };
 
+
   return (
-    <div className="container pt-24 md:pt-28 pb-12 text-black">
+    <div className="container pt-12 md:pt-12 pb-12 text-black">
       <h1 className="text-2xl font-tenor font-bold text-black mb-6">Payment Methods</h1>
-      <div className="grid md:grid-cols-2 gap-6">
-        {items.map((p, idx)=> (
-          <div key={idx} className="border rounded p-4">
-            <div className="text-black font-medium">{p.brand} •••• {p.last4}</div>
-            <div className="text-sm text-black">{p.type}{p.isDefault?' • Default':''}</div>
-            <div className="mt-3 flex gap-2">
-              <button className="px-2 py-1 border rounded text-red-600" onClick={()=>remove(idx)}>Delete</button>
+      {/* Showcase-only; removed Add New Card section */}
+
+      {/* Demo Checkout (Showcase only) */}
+      <div className="mt-10 border-t pt-6">
+        <h2 className="font-semibold mb-4 text-black">Checkout (Demo)</h2>
+        <p className="text-sm mb-4">This section is for showcase only. Buttons and fields are non-functional.</p>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm mb-1">Name on Card</label>
+              <input className="w-full border rounded px-3 py-2 text-black placeholder-gray-500" placeholder="Jane Doe" />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Card Number</label>
+              <input className="w-full border rounded px-3 py-2 text-black placeholder-gray-500" placeholder="4242 4242 4242 4242" />
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-sm mb-1">Expiry</label>
+                <input className="w-full border rounded px-3 py-2 text-black placeholder-gray-500" placeholder="MM/YY" />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">CVC</label>
+                <input className="w-full border rounded px-3 py-2 text-black placeholder-gray-500" placeholder="123" />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">ZIP</label>
+                <input className="w-full border rounded px-3 py-2 text-black placeholder-gray-500" placeholder="10001" />
+              </div>
             </div>
           </div>
-        ))}
-      </div>
 
-      <div className="mt-8 border-t pt-6">
-        <h2 className="font-semibold mb-3 text-black">Add New Card</h2>
-        <div className="grid md:grid-cols-3 gap-4">
-          <input className="border rounded px-3 py-2 text-black placeholder-gray-500" placeholder="Brand" value={form.brand} onChange={(e)=>setForm(f=>({...f, brand:e.target.value}))} />
-          <input className="border rounded px-3 py-2 text-black placeholder-gray-500" placeholder="Last 4" value={form.last4} onChange={(e)=>setForm(f=>({...f, last4:e.target.value}))} />
-          <label className="flex items-center gap-2 text-sm text-black"><input type="checkbox" checked={form.isDefault} onChange={(e)=>setForm(f=>({...f, isDefault:e.target.checked}))} /> Default</label>
-        </div>
-        <div className="flex justify-end gap-2 mt-4">
-          <button className="px-3 py-2 bg-black text-white rounded" onClick={save}>Add Card</button>
+          <div className="space-y-4">
+            <div className="border rounded p-4">
+              <h3 className="font-semibold mb-3">Payment Options</h3>
+              <div className="grid gap-3">
+                <button
+                  type="button"
+                  onClick={() => alert('Demo only: Card payment is not active yet.')}
+                  className="w-full px-4 py-2 bg-black text-white rounded"
+                >
+                  Pay Now (Card) — Demo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => alert('Demo only: UPI/Wallet payment is not active yet.')}
+                  className="w-full px-4 py-2 border border-gray-300 rounded hover:border-gray-500"
+                >
+                  Pay via UPI/Wallet — Demo
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

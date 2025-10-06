@@ -40,12 +40,10 @@ const Cart = () => {
           <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShoppingBag className="w-12 h-12 text-gray-400" />
           </div>
-          <h2 className="text-2xl font-display font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-tenor font-bold text-black mb-4">
             Your cart is empty
           </h2>
-          <p className="text-gray-600 mb-8">
-            Looks like you haven't added any items to your cart yet.
-          </p>
+          <p className="text-gray-600 mb-8">Looks like you haven't added any items to your cart yet.</p>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

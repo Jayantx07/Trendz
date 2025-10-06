@@ -23,7 +23,7 @@ const Addresses = () => {
   };
 
   return (
-    <div className="container pt-24 md:pt-28 pb-12 text-black">
+    <div className="container pt-12 md:pt-12 pb-12 text-black">
       <h1 className="text-2xl font-tenor font-bold text-black mb-6">Addresses</h1>
       <div className="grid md:grid-cols-2 gap-6">
         {items.map((a, idx) => (

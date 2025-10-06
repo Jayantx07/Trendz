@@ -1,6 +1,6 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/layout/Navbar.jsx';
 import Footer from './components/layout/Footer.jsx';
 import ApiStatus from './components/common/ApiStatus.jsx';
@@ -25,6 +25,8 @@ import { WishlistProvider } from './context/WishlistContext.jsx';
 import { SearchProvider } from './context/SearchContext.jsx';
 
 function App() {
+  const location = useLocation();
+  const hideFooter = location.pathname.startsWith('/account') || location.pathname === '/wishlist';
   return (
     <AuthProvider>
       <CartProvider>
@@ -51,7 +53,7 @@ function App() {
                   </Routes>
                 </AnimatePresence>
               </main>
-              <Footer />
+              {!hideFooter && <Footer />}
               <WhatsAppButton phone="919876543210" message="Hi, I need help with Trendz." />
             </div>
           </SearchProvider>
@@ -61,4 +63,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

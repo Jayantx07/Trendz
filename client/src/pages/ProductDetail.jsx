@@ -189,15 +189,15 @@ const ProductDetail = () => {
               {/* Navigation Arrows */}
               <button
                 onClick={prevImage}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full transition-colors"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black text-white hover:bg-black/90 p-2 rounded-full transition-colors"
               >
-                <ChevronLeft className="w-5 h-5 text-black" />
+                <ChevronLeft className="w-5 h-5 text-white" />
               </button>
               <button
                 onClick={nextImage}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full transition-colors"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black text-white hover:bg-black/90 p-2 rounded-full transition-colors"
               >
-                <ChevronRight className="w-5 h-5 text-black" />
+                <ChevronRight className="w-5 h-5 text-white" />
               </button>
 
               {/* Zoom Icon */}

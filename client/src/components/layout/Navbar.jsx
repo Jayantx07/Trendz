@@ -189,16 +189,22 @@ const Navbar = () => {
                 <Search className="w-5 h-5" />
               </button>
 
-              {/* User */}
+              {/* Cart (moved to profile's old position) */}
               <Link
-                to={user ? "/account" : "/login"}
-                className={`p-2 transition-colors ${linkColor}`}
+                to="/cart"
+                className={`p-2 relative transition-colors ${linkColor}`}
+                aria-label="Cart"
               >
-                <User className="w-5 h-5" />
+                <ShoppingBag className="w-5 h-5" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartItemCount}
+                  </span>
+                )}
               </Link>
 
               {/* Wishlist */}
-              <Link to="/wishlist" className={`p-2 relative transition-colors ${linkColor}`}>
+              <Link to="/wishlist" className={`p-2 relative transition-colors ${linkColor}`} aria-label="Wishlist">
                 <Heart className="w-5 h-5" />
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -207,16 +213,22 @@ const Navbar = () => {
                 )}
               </Link>
 
-              {/* Cart */}
+              {/* Profile (moved to cart's old position) shows avatar/photo */}
               <Link
-                to="/cart"
-                className={`p-2 relative transition-colors ${linkColor}`}
+                to={user ? "/account" : "/login"}
+                className={`p-2 transition-colors ${linkColor}`}
+                aria-label={user ? 'Account' : 'Sign in'}
               >
-                <ShoppingBag className="w-5 h-5" />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cartItemCount}
-                  </span>
+                {user ? (
+                  user.avatar ? (
+                    <img src={user.avatar} alt="Profile" className="w-7 h-7 rounded-full object-cover border border-gray-200" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs font-medium">
+                      {(user.firstName?.[0] || '').toUpperCase()}{(user.lastName?.[0] || '').toUpperCase()}
+                    </div>
+                  )
+                ) : (
+                  <User className="w-5 h-5" />
                 )}
               </Link>
             </div>
@@ -314,12 +326,13 @@ const Navbar = () => {
                   </form>
                 </div>
 
+                {/* Reordered: BAG, WISHLIST, ACCOUNT */}
                 <Link
-                  to={user ? "/account" : "/login"}
+                  to="/cart"
                   className="block px-3 py-2 text-sm font-tenor tracking-wide text-gray-900 hover:text-accent transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {user ? "ACCOUNT" : "SIGN IN"}
+                  BAG ({cartItemCount})
                 </Link>
                 <Link
                   to="/wishlist"
@@ -329,11 +342,22 @@ const Navbar = () => {
                   WISHLIST ({wishlistCount})
                 </Link>
                 <Link
-                  to="/cart"
+                  to={user ? "/account" : "/login"}
                   className="block px-3 py-2 text-sm font-tenor tracking-wide text-gray-900 hover:text-accent transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  BAG ({cartItemCount})
+                  <span className="inline-flex items-center gap-2">
+                    {user ? (
+                      user.avatar ? (
+                        <img src={user.avatar} alt="Profile" className="w-6 h-6 rounded-full object-cover border border-gray-200" />
+                      ) : (
+                        <span className="w-6 h-6 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-[10px] font-medium">
+                          {(user.firstName?.[0] || '').toUpperCase()}{(user.lastName?.[0] || '').toUpperCase()}
+                        </span>
+                      )
+                    ) : null}
+                    {user ? 'ACCOUNT' : 'SIGN IN'}
+                  </span>
                 </Link>
               </div>
             </div>

@@ -111,17 +111,17 @@ const VideoCarousel = () => {
           <div className="hidden sm:flex items-center gap-2">
             <button
               aria-label="Previous"
-              className="p-2 rounded-full border border-gray-200 hover:bg-white"
+              className="p-2 rounded-full bg-black text-white hover:bg-black/90"
               onClick={() => scrollBy(-1)}
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={20} className="text-white" />
             </button>
             <button
               aria-label="Next"
-              className="p-2 rounded-full border border-gray-200 hover:bg-white"
+              className="p-2 rounded-full bg-black text-white hover:bg-black/90"
               onClick={() => scrollBy(1)}
             >
-              <ChevronRight size={20} />
+              <ChevronRight size={20} className="text-white" />
             </button>
           </div>
         </div>
@@ -130,20 +130,20 @@ const VideoCarousel = () => {
           {/* Mobile nav buttons overlay */}
           <div className="sm:hidden absolute inset-y-0 left-0 flex items-center">
             <button
-              className="m-2 p-2 rounded-full bg-white/90 shadow"
+              className="m-2 p-2 rounded-full bg-black text-white shadow"
               onClick={() => scrollBy(-1)}
               aria-label="Previous"
             >
-              <ChevronLeft size={18} />
+              <ChevronLeft size={18} className="text-white" />
             </button>
           </div>
           <div className="sm:hidden absolute inset-y-0 right-0 flex items-center">
             <button
-              className="m-2 p-2 rounded-full bg-white/90 shadow"
+              className="m-2 p-2 rounded-full bg-black text-white shadow"
               onClick={() => scrollBy(1)}
               aria-label="Next"
             >
-              <ChevronRight size={18} />
+              <ChevronRight size={18} className="text-white" />
             </button>
           </div>
 

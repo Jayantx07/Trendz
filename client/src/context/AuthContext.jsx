@@ -13,7 +13,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Load user/token from localStorage on mount
@@ -23,6 +23,9 @@ export const AuthProvider = ({ children }) => {
     if (savedToken && savedUser) {
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
+      // validation effect will set loading false
+    } else {
+      setLoading(false);
     }
   }, []);
 
@@ -103,12 +106,13 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    setLoading(false);
   };
 
   // Validate token and fetch user profile on mount or token change
   useEffect(() => {
     const validate = async () => {
-      if (!token) return;
+      if (!token) return; // loading already set appropriately by hydrate
       setLoading(true);
       setError(null);
       try {
@@ -120,7 +124,11 @@ export const AuthProvider = ({ children }) => {
         setUser(data);
         localStorage.setItem('user', JSON.stringify(data));
       } catch (err) {
-        logout();
+        // Do not immediately clear token; just mark as logged out
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
       } finally {
         setLoading(false);
       }

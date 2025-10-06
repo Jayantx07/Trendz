@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
@@ -44,6 +45,7 @@ app.use('/api/', limiter);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -54,6 +56,7 @@ app.use('/api/orders', require('./routes/orders'));
 // app.use('/api/users', require('./routes/users'));
 // app.use('/api/blog', require('./routes/blog'));
 // app.use('/api/appointments', require('./routes/appointments'));
+// Removed PayPal integration routes
 // app.use('/api/payments', require('./routes/payments'));
 
 // Health check

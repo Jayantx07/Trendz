@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import OrderHistory from './OrderHistory.jsx';
 import OrderDetail from './OrderDetail.jsx';
-import Wishlist from './Wishlist.jsx';
 import Addresses from './Addresses.jsx';
 import Payments from './Payments.jsx';
 import SettingsPage from './Settings.jsx';
@@ -52,7 +51,7 @@ const Account = () => {
   const menuItems = [
     { id: 'profile', label: 'Profile', icon: User, path: '/account' },
     { id: 'orders', label: 'Order History', icon: Package, path: '/account/orders' },
-    { id: 'wishlist', label: 'Wishlist', icon: Heart, path: '/account/wishlist' },
+    { id: 'wishlist', label: 'Wishlist', icon: Heart, path: '/wishlist' },
     { id: 'addresses', label: 'Addresses', icon: MapPin, path: '/account/addresses' },
     { id: 'payments', label: 'Payment Methods', icon: CreditCard, path: '/account/payments' },
     { id: 'settings', label: 'Settings', icon: Settings, path: '/account/settings' },
@@ -63,20 +62,23 @@ const Account = () => {
 
   if (isSubRoute) {
     return (
-      <Routes>
-        <Route path="orders" element={<OrderHistory />} />
-        <Route path="orders/:orderId" element={<OrderDetail />} />
-        <Route path="wishlist" element={<Wishlist />} />
-        <Route path="addresses" element={<Addresses />} />
-        <Route path="payments" element={<Payments />} />
-        <Route path="settings" element={<SettingsPage />} />
-      </Routes>
+      <div className="min-h-screen bg-gray-50">
+        {/* Spacer to clear navbar */}
+        <div className="pt-16 md:pt-20" />
+        <Routes>
+          <Route path="orders" element={<OrderHistory />} />
+          <Route path="orders/:orderId" element={<OrderDetail />} />
+          <Route path="addresses" element={<Addresses />} />
+          <Route path="payments" element={<Payments />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Routes>
+      </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container pt-24 md:pt-28 pb-12">
+      <div className="container pt-28 md:pt-34 pb-12">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-tenor font-bold text-gray-900 mb-2">
@@ -130,6 +132,15 @@ const Account = () => {
                   );
                 })}
               </nav>
+
+              {/* Logout button at bottom */}
+              <button
+                onClick={() => { logout(); navigate('/'); }}
+                className="mt-4 w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-200 hover:bg-gray-100 text-gray-700"
+              >
+                <LogOut className="w-4 h-4" />
+                Log out
+              </button>
             </div>
           </div>
 
