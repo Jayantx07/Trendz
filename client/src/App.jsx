@@ -5,6 +5,7 @@ import Navbar from './components/layout/Navbar.jsx';
 import Footer from './components/layout/Footer.jsx';
 import ApiStatus from './components/common/ApiStatus.jsx';
 import ScrollToTop from './components/common/ScrollToTop.jsx';
+import PrivateRoute from './components/common/PrivateRoute.jsx';
 import Home from './pages/Home.jsx';
 import Products from './pages/Products.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
@@ -42,7 +43,7 @@ function App() {
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/wishlist" element={<Wishlist />} />
                     <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/account/*" element={<Account />} />
+                    <Route path="/account/*" element={<PrivateRoute><Account /></PrivateRoute>} />
                     <Route path="/about" element={<About />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/login" element={<Login />} />

@@ -8,6 +8,24 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Connect to MongoDB
+mongoose.set('strictQuery', true);
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+  console.error('Missing MONGODB_URI in environment. Please set it in server/.env');
+  process.exit(1);
+}
+mongoose
+  .connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log('MongoDB connected'))
+  .catch((err) => {
+    console.error('MongoDB connection error:', err.message);
+    process.exit(1);
+  });
+
 // Middleware
 app.use(helmet());
 app.use(cors({

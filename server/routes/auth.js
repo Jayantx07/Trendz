@@ -102,15 +102,15 @@ router.get('/me', auth, async (req, res) => {
     const user = await User.findById(req.user.userId)
       .select('-password')
       .populate('wishlist', 'name primaryImage basePrice salePrice isOnSale');
-    
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json(user);
+    return res.json(user);
   } catch (error) {
     console.error('Get profile error:', error);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -121,6 +121,9 @@ router.put('/profile', auth, async (req, res) => {
       firstName,
       lastName,
       phone,
+      email,
+      avatar,
+      removeAvatar,
       preferences,
       addresses,
       paymentMethods
@@ -132,9 +135,12 @@ router.put('/profile', auth, async (req, res) => {
     }
 
     // Update fields
-    if (firstName) user.firstName = firstName;
-    if (lastName) user.lastName = lastName;
-    if (phone) user.phone = phone;
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (phone !== undefined) user.phone = phone;
+    if (email !== undefined) user.email = email;
+    if (removeAvatar) user.avatar = '';
+    if (avatar !== undefined) user.avatar = avatar; // Accept base64/url string for demo
     if (preferences) user.preferences = { ...user.preferences, ...preferences };
     if (addresses) user.addresses = addresses;
     if (paymentMethods) user.paymentMethods = paymentMethods;
@@ -148,6 +154,7 @@ router.put('/profile', auth, async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        avatar: user.avatar,
         phone: user.phone,
         preferences: user.preferences
       }
@@ -157,8 +164,6 @@ router.put('/profile', auth, async (req, res) => {
     res.status(500).json({ message: 'Server error updating profile' });
   }
 });
-
-// Change password
 router.put('/change-password', auth, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;

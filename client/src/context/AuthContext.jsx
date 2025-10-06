@@ -26,6 +26,21 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Safe JSON parser for fetch responses
+  const parseJsonSafe = async (res) => {
+    try {
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        return await res.json();
+      }
+      // fallback to text
+      const txt = await res.text();
+      return txt ? { message: txt } : {};
+    } catch (_) {
+      return {};
+    }
+  };
+
   // Login function
   const login = async (email, password) => {
     setLoading(true);
@@ -37,10 +52,10 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password })
       });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await parseJsonSafe(res);
         throw new Error(data.message || 'Login failed');
       }
-      const data = await res.json();
+      const data = await parseJsonSafe(res);
       setToken(data.token);
       setUser(data.user);
       localStorage.setItem('token', data.token);
@@ -65,10 +80,10 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ firstName, lastName, email, password })
       });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await parseJsonSafe(res);
         throw new Error(data.message || 'Registration failed');
       }
-      const data = await res.json();
+      const data = await parseJsonSafe(res);
       setToken(data.token);
       setUser(data.user);
       localStorage.setItem('token', data.token);
@@ -116,7 +131,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (profileData) => {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/auth/profile', {
         method: 'PUT',
         headers: {
@@ -128,7 +143,9 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         const updatedUser = await response.json();
-        setUser(updatedUser);
+        const u = updatedUser.user || updatedUser;
+        setUser(u);
+        localStorage.setItem('user', JSON.stringify(u));
         return { success: true };
       } else {
         const error = await response.json();
@@ -142,7 +159,7 @@ export const AuthProvider = ({ children }) => {
 
   const changePassword = async (currentPassword, newPassword) => {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('token');
       const response = await fetch('/api/auth/change-password', {
         method: 'PUT',
         headers: {
