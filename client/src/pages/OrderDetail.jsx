@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../utils/api.js';
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { motion } from 'framer-motion';
-import { 
+import {
   ArrowLeft,
-  Package, 
-  Truck, 
-  CheckCircle, 
-  Clock, 
-  X, 
+  Package,
+  Truck,
+  CheckCircle,
+  Clock,
+  X,
   MapPin,
   CreditCard,
   Calendar,
@@ -17,7 +19,7 @@ import {
   Download,
   MessageCircle
 } from 'lucide-react';
-
+  
 const OrderDetail = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
@@ -28,16 +30,16 @@ const OrderDetail = () => {
 
   useEffect(() => {
     fetchOrder();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, token]);
 
   const fetchOrder = async () => {
-    if (!token) return;
     
     setLoading(true);
     setError(null);
     
     try {
-      const response = await fetch(`/api/orders/${orderId}`, {
+      const response = await apiFetch(`/orders/${orderId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

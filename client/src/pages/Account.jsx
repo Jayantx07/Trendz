@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../utils/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useNavigate, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -34,7 +35,7 @@ const Account = () => {
     // Fetch wishlist count from server
     const loadWishlist = async () => {
       try {
-        const res = await fetch('/api/auth/wishlist', {
+        const res = await apiFetch('/auth/wishlist', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         if (res.ok) {
