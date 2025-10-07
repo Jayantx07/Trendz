@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../../utils/api.js';
+
 import { motion } from 'framer-motion';
 
 const ApiStatus = () => {
@@ -8,7 +10,7 @@ const ApiStatus = () => {
   useEffect(() => {
     const checkApiStatus = async () => {
       try {
-        const response = await fetch('/api/health');
+        const response = await apiFetch('/health');
         if (response.ok) {
           setStatus('connected');
           setMessage('API connected successfully');

@@ -15,6 +15,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { useCart } from '../context/CartContext.jsx';
+import { apiFetch } from '../utils/api.js';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { getProductBySlug, localProducts, slugify } from '../utils/localProducts.js';
 
@@ -40,7 +41,7 @@ const ProductDetail = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/products/${slug}`);
+        const res = await apiFetch(`/products/${slug}`);
         if (!res.ok) throw new Error('api_unavailable');
         const data = await res.json();
         if (!isMounted) return;
