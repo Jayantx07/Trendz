@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiFetch } from '../utils/api.js';
 
 const AuthContext = createContext();
 
@@ -49,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await apiFetch('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -77,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await apiFetch('/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ firstName, lastName, email, password })
@@ -116,7 +117,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/auth/me', {
+        const res = await apiFetch('/auth/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Session expired. Please login again.');
@@ -140,7 +141,7 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (profileData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/auth/profile', {
+      const response = await apiFetch('/auth/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -168,7 +169,7 @@ export const AuthProvider = ({ children }) => {
   const changePassword = async (currentPassword, newPassword) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/auth/change-password', {
+      const response = await apiFetch('/auth/change-password', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

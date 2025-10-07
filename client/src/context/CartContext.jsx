@@ -1,11 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { apiFetch } from '../utils/api.js';
 import { useAuth } from './AuthContext.jsx';
 
 const CartContext = createContext();
 
 export const useCart = () => useContext(CartContext);
 
-export const CartProvider = ({ children }) => {
+const CartProvider = ({ children }) => {
   const { user, token } = useAuth();
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -17,7 +18,7 @@ export const CartProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/cart', {
+      const res = await apiFetch('/cart', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch cart');
@@ -40,11 +41,11 @@ export const CartProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/cart', {
+      const res = await apiFetch('/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `bearer ${token}`
         },
         body: JSON.stringify({ items })
       });
@@ -69,9 +70,9 @@ export const CartProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/cart/item/${productId}`, {
+      const res = await apiFetch(`/cart/item/${productId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to remove item');
       const data = await res.json();
@@ -93,9 +94,9 @@ export const CartProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/cart/clear', {
+      const res = await apiFetch('/cart/clear', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to clear cart');
       setCart([]);
@@ -186,11 +187,11 @@ export const CartProvider = ({ children }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('/api/orders', {
+      const response = await apiFetch('/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `bearer ${token}`,
         },
         body: JSON.stringify({
           items: cart,

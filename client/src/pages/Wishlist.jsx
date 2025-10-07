@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../utils/api.js';
 
 const Wishlist = () => {
   const [items, setItems] = useState([]);
@@ -11,7 +12,7 @@ const Wishlist = () => {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch('/api/auth/wishlist', { headers: { ...authHeader() } });
+      const res = await apiFetch('/auth/wishlist', { headers: { ...authHeader() } });
       if (!res.ok) throw new Error('Failed to load wishlist');
       const data = await res.json();
       setItems(data || []);
@@ -26,7 +27,7 @@ const Wishlist = () => {
 
   const removeItem = async (productId) => {
     try {
-      const res = await fetch(`/api/auth/wishlist/${productId}`, { method: 'DELETE', headers: { ...authHeader() } });
+      const res = await apiFetch(`/auth/wishlist/${productId}`, { method: 'DELETE', headers: { ...authHeader() } });
       if (!res.ok) throw new Error('Failed to remove');
       setItems((list) => list.filter((p) => (p._id || p.id) !== productId));
     } catch (e) {
