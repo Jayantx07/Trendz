@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../utils/api.js';
+
 import { useAuth } from '../context/AuthContext.jsx';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -26,25 +28,21 @@ const OrderHistory = () => {
 
   const fetchOrders = async () => {
     if (!token) return;
-    
+
     setLoading(true);
     setError(null);
-    
     try {
       const params = new URLSearchParams();
-      if (filter !== 'all') {
-        params.append('status', filter);
-      }
-      
-      const response = await fetch(`/api/orders/my-orders?${params}`, {
+      if (filter !== 'all') params.append('status', filter);
+
+      const response = await apiFetch(`/orders/my-orders?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-
       if (response.ok) {
         const data = await response.json();
-        setOrders(data.orders);
+        setOrders(Array.isArray(data?.orders) ? data.orders : (Array.isArray(data) ? data : []));
       } else {
         throw new Error('Failed to fetch orders');
       }
