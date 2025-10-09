@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { 
   Instagram, 
   Youtube, 
@@ -66,9 +65,9 @@ const Footer = () => {
       </section>
 
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Contact Information */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+          {/* Contact */}
           <div>
             <h3 className="text-lg font-tenor mb-4">Contact Us</h3>
             <div className="space-y-3">
@@ -89,79 +88,25 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Footer Links */}
-          {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category}>
-              <h3 className="text-lg font-tenor mb-4">{category}</h3>
-              <ul className="space-y-2">
-                {links.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      to={link.href}
-                      className="text-neutral-800 hover:text-accent transition-colors text-sm"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {/* Social Links */}
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-6">
-              <span className="text-sm text-neutral-800">Follow Us</span>
-              <div className="flex items-center gap-4 hidden">
-                {socialLinks.map((social) => (
-                  <motion.a
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="text-neutral-800 hover:text-accent transition-colors"
-                  >
-                    <social.icon className="w-5 h-5" />
-                  </motion.a>
-                ))}
-              </div>
-            </div>
-
-            {/* Language/Country Selector */}
-            <div className="flex items-center gap-4 hidden">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-neutral-800">Shipping to:</span>
-                <select className="bg-gray-800 border border-gray-600 rounded px-3 py-1 text-sm text-white">
-                  <option value="us">United States (USD $)</option>
-                  <option value="ca">Canada (CAD)</option>
-                  <option value="uk">United Kingdom (GBP)</option>
-                  <option value="eu">Europe (EUR)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="mt-8 pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-sm text-neutral-800">
-              © 2025 Trendz. All rights reserved
-            </div>
-            <div className="flex items-center gap-6 text-sm text-neutral-800">
-              <Link to="/legal/terms" className="hover:text-accent transition-colors">
-                Terms of Use
-              </Link>
-              <Link to="/legal/privacy" className="hover:text-accent transition-colors">
-                Privacy Policy
-              </Link>
-              <Link to="/legal/accessibility" className="hover:text-accent transition-colors">
-                Accessibility
-              </Link>
+          {/* Follow Us (far right column) */}
+          <div className="md:justify-self-end text-left md:text-right pr-2 md:pr-4 lg:pr-6">
+            <h4 className="text-base md:text-lg font-tenor font-semibold text-neutral-800 mb-4">Follow Us</h4>
+            <div className="flex md:justify-end items-center flex-wrap gap-4">
+              {socialLinks.map((social) => (
+                <motion.a
+                  key={social.name}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="text-neutral-800 hover:text-accent transition-colors"
+                  aria-label={social.name}
+                  title={social.name}
+                >
+                  <social.icon className="w-5 h-5 md:w-6 md:h-6" />
+                </motion.a>
+              ))}
             </div>
           </div>
         </div>
