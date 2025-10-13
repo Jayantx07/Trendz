@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -8,31 +8,36 @@ const useVideos = () =>
   useMemo(
     () => [
       {
-        src: '/videos/reel 01.mp4',
+        src: 'https://res.cloudinary.com/dhaegglsm/video/upload/site-assets/videos/reel_01.mp4',
+        poster: 'https://res.cloudinary.com/dhaegglsm/video/upload/site-assets/videos/reel_01.jpg',
         title: 'Raahat Ruffled Dress',
         price: 4600,
         currency: '₹',
       },
       {
-        src: '/videos/REEL 02.mp4',
+        src: 'https://res.cloudinary.com/dhaegglsm/video/upload/site-assets/videos/REEL_02.mp4',
+        poster: 'https://res.cloudinary.com/dhaegglsm/video/upload/site-assets/videos/REEL_02.jpg',
         title: 'Saanjh Long Dress',
         price: 4200,
         currency: '₹',
       },
       {
-        src: '/videos/reel 03.mp4',
+        src: 'https://res.cloudinary.com/dhaegglsm/video/upload/site-assets/videos/reel_03.mp4',
+        poster: 'https://res.cloudinary.com/dhaegglsm/video/upload/site-assets/videos/reel_03.jpg',
         title: 'Maati Kurta',
         price: 3200,
         currency: '₹',
       },
       {
-        src: '/videos/product 01.mp4',
+        src: 'https://res.cloudinary.com/dhaegglsm/video/upload/site-assets/videos/product_01.mp4',
+        poster: 'https://res.cloudinary.com/dhaegglsm/video/upload/site-assets/videos/product_01.jpg',
         title: 'Saanjh Short Dress',
         price: 4100,
         currency: '₹',
       },
       {
-        src: '/videos/reel 05.mp4',
+        src: 'https://res.cloudinary.com/dhaegglsm/video/upload/site-assets/videos/reel_05.mp4',
+        poster: 'https://res.cloudinary.com/dhaegglsm/video/upload/site-assets/videos/reel_05.jpg',
         title: 'Bloom Co-ord',
         price: 3500,
         currency: '₹',
@@ -42,6 +47,37 @@ const useVideos = () =>
   );
 
 const VideoCard = ({ item }) => {
+  const videoRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const vis = entry.isIntersecting && entry.intersectionRatio > 0.4;
+        setIsVisible(vis);
+      },
+      { threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isVisible) {
+      // play only when visible
+      const playPromise = v.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {});
+      }
+    } else {
+      v.pause();
+    }
+  }, [isVisible]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -52,11 +88,13 @@ const VideoCard = ({ item }) => {
     >
       <div className="relative rounded-xl overflow-hidden shadow-lg bg-black">
         <video
+          ref={videoRef}
           className="w-full h-[420px] object-cover"
           src={item.src}
+          poster={item.poster}
           muted
           playsInline
-          autoPlay
+          preload="none"
           loop
         />
         {/* Gradient overlay */}

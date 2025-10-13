@@ -12,8 +12,10 @@ const HeroSection = () => {
           muted
           loop
           playsInline
+          preload="none"
+          poster="https://res.cloudinary.com/dhaegglsm/video/upload/v1760336839/site-assets/Background_Video.jpg"
         >
-          <source src="/Background Video.mp4" type="video/mp4" />
+          <source src="https://res.cloudinary.com/dhaegglsm/video/upload/v1760336839/site-assets/Background_Video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       </div>

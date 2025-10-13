@@ -48,6 +48,16 @@ const productSchema = new mongoose.Schema({
       type: String,
       required: true
     },
+    publicId: {
+      type: String,
+      required: false,
+      index: true
+    },
+    assetType: {
+      type: String,
+      enum: ['image'],
+      default: 'image'
+    },
     alt: String,
     isPrimary: {
       type: Boolean,
@@ -56,6 +66,16 @@ const productSchema = new mongoose.Schema({
   }],
   videos: [{
     url: String,
+    publicId: {
+      type: String,
+      required: false,
+      index: true
+    },
+    assetType: {
+      type: String,
+      enum: ['video'],
+      default: 'video'
+    },
     type: {
       type: String,
       enum: ['preview', 'lookbook', 'runway'],

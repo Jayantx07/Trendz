@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { slugify, localProducts } from '../utils/localProducts.js';
+import LazyImage from '../components/common/LazyImage.jsx';
 import { apiFetch } from '../utils/api.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
@@ -196,6 +197,9 @@ const Products = () => {
   const renderProductCard = (product) => {
     const slug = slugify(product.name || product.id);
     const go = () => navigate(`/products/${slug}`);
+    const imageSrc = product.image || product.primaryImage || '';
+    const curPrice = product.salePrice || product.price || product.basePrice;
+    const origPrice = product.salePrice ? (product.price || product.basePrice) : null;
     return (
     <motion.div
       key={product.id}
@@ -205,21 +209,20 @@ const Products = () => {
     >
       <div className="product-card">
         <div className="product-image-container cursor-pointer" onClick={go}>
-          <img
-            src={product.image}
+          <LazyImage
+            src={imageSrc}
             alt={product.name}
             className="product-image"
-            loading="lazy"
           />
-          
+
           {/* Badges */}
           <div className="product-badges">
             {product.isNew && (
               <span className="badge-new">New</span>
             )}
-            {product.onSale && (
+            {(product.onSale || product.isOnSale) && (origPrice && curPrice) && (
               <span className="badge-sale">
-                {Math.round(((product.price - product.salePrice) / product.price) * 100)}% Off
+                {Math.round(((origPrice - curPrice) / origPrice) * 100)}% Off
               </span>
             )}
           </div>
@@ -233,7 +236,7 @@ const Products = () => {
               className="product-wishlist"
             >
               <Heart 
-                className={`w-4 h-4 text-black ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : ''}`} 
+                className={`w-4 h-4 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : ''}`} 
               />
             </motion.button>
             
@@ -273,34 +276,34 @@ const Products = () => {
           
           {/* Rating */}
           <div className="flex items-center gap-1 mb-2">
-            <div className="flex items-center">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-3 h-3 ${
-                    i < Math.floor(product.rating) 
-                      ? 'text-yellow-400 fill-current' 
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`w-3 h-3 ${
+                  i < Math.floor(product.rating) 
+                    ? 'text-yellow-400 fill-current' 
+                    : 'text-gray-300'
+                }`}
+              />
+            ))}
             <span className="text-xs text-gray-500">({product.reviewCount})</span>
           </div>
           
           <div className="product-price">
-            {product.salePrice ? (
+            {product.salePrice || product.basePrice ? (
               <>
                 <span className="product-current-price">
-                  {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.salePrice)}
+                  {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(curPrice)}
                 </span>
-                <span className="product-original-price">
-                  {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.price)}
-                </span>
+                {origPrice && (
+                  <span className="product-original-price">
+                    {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(origPrice)}
+                  </span>
+                )}
               </>
             ) : (
               <span className="product-current-price">
-                {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.price)}
+                {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(curPrice || 0)}
               </span>
             )}
           </div>
@@ -336,11 +339,10 @@ const Products = () => {
     >
       <div className="flex gap-6">
         <div className="w-32 h-32 flex-shrink-0">
-          <img
-            src={product.image}
+          <LazyImage
+            src={product.image || product.primaryImage}
             alt={product.name}
             className="w-full h-full object-cover rounded-lg"
-            loading="lazy"
           />
         </div>
         

@@ -6,6 +6,7 @@ import Footer from './components/layout/Footer.jsx';
 import ApiStatus from './components/common/ApiStatus.jsx';
 import ScrollToTop from './components/common/ScrollToTop.jsx';
 import PrivateRoute from './components/common/PrivateRoute.jsx';
+import AdminRoute from './components/common/AdminRoute.jsx';
 import Home from './pages/Home.jsx';
 import Products from './pages/Products.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
@@ -17,6 +18,7 @@ import Register from './pages/Register.jsx';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
 import Wishlist from './pages/Wishlist.jsx';
+import Admin from './pages/Admin.jsx';
 import WhatsAppButton from './components/common/WhatsAppButton.jsx';
 
 import { AuthProvider } from './context/AuthContext.jsx';
@@ -46,6 +48,7 @@ function App() {
                     <Route path="/wishlist" element={<Wishlist />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/account/*" element={<PrivateRoute><Account /></PrivateRoute>} />
+                    <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
                     <Route path="/about" element={<About />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/login" element={<Login />} />

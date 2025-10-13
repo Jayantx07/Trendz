@@ -18,6 +18,7 @@ import { useCart } from '../context/CartContext.jsx';
 import { apiFetch } from '../utils/api.js';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { getProductBySlug, localProducts, slugify } from '../utils/localProducts.js';
+import LazyImage from '../components/common/LazyImage.jsx';
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -46,6 +47,7 @@ const ProductDetail = () => {
         const data = await res.json();
         if (!isMounted) return;
         setProduct(data);
+
         if (data.variants && data.variants.length > 0) {
           setSelectedColor(data.variants[0].color?.name || '');
           setSelectedSize(data.variants[0].size || '');
@@ -69,6 +71,10 @@ const ProductDetail = () => {
       }
     };
     load();
+    // Normalize images array to URL strings
+    const imageUrls = Array.isArray(product?.images)
+      ? product.images.map((im) => (typeof im === 'string' ? im : im?.url)).filter(Boolean)
+      : [];
     return () => { isMounted = false; };
   }, [slug]);
 
@@ -101,13 +107,13 @@ const ProductDetail = () => {
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => 
-      prev === product.images.length - 1 ? 0 : prev + 1
+      prev === imageUrls.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => 
-      prev === 0 ? product.images.length - 1 : prev - 1
+      prev === 0 ? imageUrls.length - 1 : prev - 1
     );
   };
 
@@ -126,7 +132,10 @@ const ProductDetail = () => {
   };
 
   if (loading) {
-    return (
+    const curPrice = product.salePrice ?? product.price ?? product.basePrice;
+  const origPrice = product.salePrice ? (product.price ?? product.basePrice) : null;
+
+  return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -180,8 +189,8 @@ const ProductDetail = () => {
           <div className="space-y-4">
             {/* Main Image */}
             <div className="relative aspect-[3/4] bg-white rounded-lg overflow-hidden">
-              <img
-                src={product.images[currentImageIndex]}
+              <LazyImage
+                src={imageUrls[currentImageIndex]}
                 alt={product.name}
                 className="w-full h-full object-cover cursor-zoom-in"
                 onClick={() => setShowZoom(true)}
@@ -214,9 +223,9 @@ const ProductDetail = () => {
                 {product.isNew && (
                   <span className="badge-new">New</span>
                 )}
-                {product.onSale && (
+                {(product.onSale || product.isOnSale) && (origPrice && curPrice) && (
                   <span className="badge-sale">
-                    {Math.round(((product.price - product.salePrice) / product.price) * 100)}% Off
+                    {Math.round(((origPrice - curPrice) / origPrice) * 100)}% Off
                   </span>
                 )}
               </div>
@@ -224,7 +233,7 @@ const ProductDetail = () => {
 
             {/* Thumbnail Images */}
             <div className="grid grid-cols-4 gap-2">
-              {product.images.map((image, index) => (
+              {imageUrls.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
@@ -234,10 +243,11 @@ const ProductDetail = () => {
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <img
+                  <LazyImage
                     src={image}
                     alt={`${product.name} ${index + 1}`}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </button>
               ))}
@@ -283,16 +293,16 @@ const ProductDetail = () => {
 
             {/* Price */}
             <div className="flex items-center gap-4">
-              {product.salePrice ? (
+              {origPrice ? (
                 <>
-                  <span className="text-3xl font-bold text-gray-900">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.salePrice)}</span>
-                  <span className="text-xl text-gray-500 line-through">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.price)}</span>
+                  <span className="text-3xl font-bold text-gray-900">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(curPrice)}</span>
+                  <span className="text-xl text-gray-500 line-through">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(origPrice)}</span>
                   <span className="text-sm bg-red-100 text-red-600 px-2 py-1 rounded">
-                    {Math.round(((product.price - product.salePrice) / product.price) * 100)}% Off
+                    {Math.round(((origPrice - curPrice) / origPrice) * 100)}% Off
                   </span>
                 </>
               ) : (
-                <span className="text-3xl font-bold text-gray-900">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.price)}</span>
+                <span className="text-3xl font-bold text-gray-900">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(curPrice)}</span>
               )}
             </div>
 
@@ -484,10 +494,12 @@ const ProductDetail = () => {
           >
             <div className="relative max-w-4xl max-h-full">
               <img
-                src={product.images[currentImageIndex]}
+                src={imageUrls[currentImageIndex]}
                 alt={product.name}
                 className="max-w-full max-h-full object-contain"
                 onClick={(e) => e.stopPropagation()}
+                loading="lazy"
+                decoding="async"
               />
               
               <button

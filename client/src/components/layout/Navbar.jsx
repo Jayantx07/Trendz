@@ -71,7 +71,9 @@ const Navbar = () => {
   const effectiveScrolled = onHome ? isScrolled : true;
   const navBg = effectiveScrolled ? 'bg-white shadow-sm' : 'bg-transparent';
   const linkColor = effectiveScrolled ? 'text-gray-900 hover:text-accent' : 'text-white hover:text-white/80';
-  const logoSrc = effectiveScrolled ? '/images/Logo black.png' : '/images/Logo white.png';
+  const logoBlack = import.meta.env.VITE_LOGO_BLACK_URL || '/images/Logo black.png';
+  const logoWhite = import.meta.env.VITE_LOGO_WHITE_URL || '/images/Logo white.png';
+  const logoSrc = effectiveScrolled ? logoBlack : logoWhite;
 
   const submitSearch = (e) => {
     e && e.preventDefault();

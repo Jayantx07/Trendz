@@ -11,3 +11,22 @@ export const apiFetch = (path, options = {}) => {
   const url = apiUrl(path);
   return fetch(url, options);
 };
+
+export const apiAuthFetch = (path, options = {}) => {
+  const token = localStorage.getItem('token');
+  const headers = { ...(options.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return apiFetch(path, { ...options, headers });
+};
+
+export const uploadFiles = async (path, files, extra = {}) => {
+  const fd = new FormData();
+  files.forEach((f) => fd.append('files', f));
+  Object.entries(extra).forEach(([k, v]) => fd.append(k, v));
+  const res = await apiAuthFetch(path, {
+    method: 'POST',
+    body: fd,
+  });
+  if (!res.ok) throw new Error('Upload failed');
+  return res.json();
+};
