@@ -89,13 +89,23 @@ router.get('/', async (req, res) => {
       .sort(sortObj)
       .skip(skip)
       .limit(parseInt(limit))
-      .select('name slug primaryImage basePrice salePrice isOnSale discountPercentage category gender ratings');
+      .select('name slug images.url images.isPrimary basePrice salePrice isOnSale discountPercentage category gender ratings')
+      .lean();
+
+    const withPrimary = (products || []).map(p => {
+      const imgs = Array.isArray(p.images) ? p.images : [];
+      const primary = imgs.find(i => i.isPrimary) || imgs[0];
+      return {
+        ...p,
+        primaryImage: primary ? primary.url : '',
+      };
+    });
 
     const total = await Product.countDocuments(filter);
     const totalPages = Math.ceil(total / parseInt(limit));
 
     res.json({
-      products,
+      products: withPrimary,
       pagination: {
         currentPage: parseInt(page),
         totalPages,
@@ -114,10 +124,16 @@ router.get('/', async (req, res) => {
 router.get('/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
-
-    const product = await Product.findOne({ slug, status: 'active' })
+    let product = await Product.findOne({ slug, status: 'active' })
       .populate('relatedProducts', 'name slug primaryImage basePrice salePrice isOnSale')
       .populate('reviews.user', 'firstName lastName');
+
+    // If not found by slug, try by _id
+    if (!product && slug.match(/^[a-fA-F0-9]{24}$/)) {
+      product = await Product.findOne({ _id: slug, status: 'active' })
+        .populate('relatedProducts', 'name slug primaryImage basePrice salePrice isOnSale')
+        .populate('reviews.user', 'firstName lastName');
+    }
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });

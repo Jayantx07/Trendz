@@ -19,8 +19,10 @@ import { apiFetch } from '../utils/api.js';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { getProductBySlug, localProducts, slugify } from '../utils/localProducts.js';
 import LazyImage from '../components/common/LazyImage.jsx';
+import { useMedia } from '../context/MediaMapContext.jsx';
 
 const ProductDetail = () => {
+  const { resolve } = useMedia();
   const { slug } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
@@ -71,10 +73,6 @@ const ProductDetail = () => {
       }
     };
     load();
-    // Normalize images array to URL strings
-    const imageUrls = Array.isArray(product?.images)
-      ? product.images.map((im) => (typeof im === 'string' ? im : im?.url)).filter(Boolean)
-      : [];
     return () => { isMounted = false; };
   }, [slug]);
 
@@ -132,10 +130,7 @@ const ProductDetail = () => {
   };
 
   if (loading) {
-    const curPrice = product.salePrice ?? product.price ?? product.basePrice;
-  const origPrice = product.salePrice ? (product.price ?? product.basePrice) : null;
-
-  return (
+    return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -162,6 +157,48 @@ const ProductDetail = () => {
     );
   }
 
+  // Compute prices & images only once product is available
+  const curPrice = (product?.salePrice ?? product?.price ?? product?.basePrice) || 0;
+  const origPrice = product?.salePrice ? (product?.price ?? product?.basePrice) : null;
+  // Filter images/videos for selected color/size variant
+  let variantMedia = [];
+  if (Array.isArray(product?.images)) {
+    variantMedia = product.images.filter(img => {
+      // If both colorName and size are present, match both
+      if (img.colorName && img.size) {
+        return img.colorName === selectedColor && img.size === selectedSize;
+      }
+      // If only colorName, match color
+      if (img.colorName) {
+        return img.colorName === selectedColor;
+      }
+      // If only size, match size
+      if (img.size) {
+        return img.size === selectedSize;
+      }
+      // Otherwise, include as fallback
+      return true;
+    });
+    // If no media for this variant, fallback to all images
+    if (variantMedia.length === 0) {
+      variantMedia = product.images;
+    }
+  }
+  const imageUrls = Array.isArray(variantMedia)
+    ? variantMedia
+        .filter(im => !im.url || !im.url.match(/\.(mp4|webm|ogg)$/i))
+        .map((im) => (typeof im === 'string' ? im : im?.url))
+        .filter(Boolean)
+        .map((u) => resolve(u))
+    : (product?.primaryImage ? [resolve(product.primaryImage)] : []);
+  const videoUrls = Array.isArray(variantMedia)
+    ? variantMedia
+        .filter(im => im.url && im.url.match(/\.(mp4|webm|ogg)$/i))
+        .map((im) => (typeof im === 'string' ? im : im?.url))
+        .filter(Boolean)
+        .map((u) => resolve(u))
+    : [];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container pt-16 pb-8">
@@ -185,38 +222,50 @@ const ProductDetail = () => {
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Images */}
+          {/* Product Images & Videos (per variant) */}
           <div className="space-y-4">
-            {/* Main Image */}
-            <div className="relative aspect-[3/4] bg-white rounded-lg overflow-hidden">
-              <LazyImage
-                src={imageUrls[currentImageIndex]}
-                alt={product.name}
-                className="w-full h-full object-cover cursor-zoom-in"
-                onClick={() => setShowZoom(true)}
-              />
-              
-              {/* Navigation Arrows */}
-              <button
-                onClick={prevImage}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black text-white hover:bg-black/90 p-2 rounded-full transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5 text-white" />
-              </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black text-white hover:bg-black/90 p-2 rounded-full transition-colors"
-              >
-                <ChevronRight className="w-5 h-5 text-white" />
-              </button>
+            {/* Main Image/Video */}
+            <div className="relative aspect-[3/4] bg-white rounded-lg overflow-hidden flex items-center justify-center">
+              {imageUrls.length > 0 ? (
+                <LazyImage
+                  src={imageUrls[currentImageIndex]}
+                  alt={product.name}
+                  className="w-full h-full object-cover cursor-zoom-in"
+                  onClick={() => setShowZoom(true)}
+                />
+              ) : videoUrls.length > 0 ? (
+                <video src={videoUrls[0]} controls className="w-full h-full object-cover rounded" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">No media</div>
+              )}
 
-              {/* Zoom Icon */}
-              <button
-                onClick={() => setShowZoom(true)}
-                className="absolute top-4 right-4 bg-white/80 hover:bg-white p-2 rounded-full transition-colors"
-              >
-                <ZoomIn className="w-5 h-5 text-black" />
-              </button>
+              {/* Navigation Arrows (only for images) */}
+              {imageUrls.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black text-white hover:bg-black/90 p-2 rounded-full transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-white" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black text-white hover:bg-black/90 p-2 rounded-full transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5 text-white" />
+                  </button>
+                </>
+              )}
+
+              {/* Zoom Icon (only for images) */}
+              {imageUrls.length > 0 && (
+                <button
+                  onClick={() => setShowZoom(true)}
+                  className="absolute top-4 right-4 bg-white/80 hover:bg-white p-2 rounded-full transition-colors"
+                >
+                  <ZoomIn className="w-5 h-5 text-black" />
+                </button>
+              )}
 
               {/* Badges */}
               <div className="absolute top-4 left-4 space-y-2">
@@ -231,27 +280,37 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Thumbnail Images */}
-            <div className="grid grid-cols-4 gap-2">
-              {imageUrls.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
-                    index === currentImageIndex 
-                      ? 'border-accent' 
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <LazyImage
-                    src={image}
-                    alt={`${product.name} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </button>
-              ))}
-            </div>
+            {/* Thumbnail Images (only for images) */}
+            {imageUrls.length > 0 && (
+              <div className="grid grid-cols-4 gap-2">
+                {imageUrls.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
+                      index === currentImageIndex 
+                        ? 'border-accent' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <LazyImage
+                      src={image}
+                      alt={`${product.name} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* Video thumbnails (if any) */}
+            {videoUrls.length > 0 && (
+              <div className="flex gap-2 mt-2">
+                {videoUrls.map((video, vIdx) => (
+                  <video key={vIdx} src={video} controls className="w-20 h-20 object-cover rounded" />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
@@ -314,42 +373,50 @@ const ProductDetail = () => {
             </div>
 
             {/* Color Selection */}
-            <div>
-              <h3 className="text-sm font-tenor text-gray-900 mb-3">Color: {selectedColor}</h3>
-              <div className="flex gap-3">
-                {product.colors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 transition-colors ${
-                      selectedColor === color 
-                        ? 'border-accent' 
-                        : 'border-black bg-black text-white hover:opacity-90'
-                    }`}
-                    style={{ backgroundColor: color.toLowerCase() }}
-                    title={color}
-                  />
-                ))}
+            <div className="mb-6">
+              <h3 className="text-sm font-tenor text-gray-900 mb-3">Color</h3>
+              <div className="flex gap-4 flex-wrap items-end">
+                {Array.from(new Set((product.variants || []).map(v => v.color?.name))).map((colorName, idx) => {
+                  const colorHex = (product.variants || []).find(v => v.color?.name === colorName)?.color?.hex || '#ccc';
+                  return (
+                    <div key={colorName || idx} className="flex flex-col items-center">
+                      <button
+                        onClick={() => setSelectedColor(colorName)}
+                        className={`w-10 h-10 rounded-full border-2 flex items-center justify-center mb-1 transition-colors ${selectedColor === colorName ? 'border-black' : 'border-gray-300'}`}
+                        style={{ backgroundColor: colorHex }}
+                        aria-label={colorName}
+                      />
+                      <span className="text-xs text-black mt-1">{colorName}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             {/* Size Selection */}
-            <div>
-              <h3 className="text-sm font-tenor text-gray-900 mb-3">Size: {selectedSize}</h3>
-              <div className="flex gap-2">
-                {product.sizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                      selectedSize === size
-                        ? 'border-accent bg-accent text-white'
-                        : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+            <div className="mb-6">
+              <h3 className="text-sm font-tenor text-gray-900 mb-3">Size</h3>
+              <div className="flex gap-2 flex-wrap">
+                {['XS','S','M','L','XL','XXL'].map(sz => {
+                  // Find if this size is available for the selected color
+                  const available = (product.variants || []).some(v => v.size === sz && v.color?.name === selectedColor);
+                  return (
+                    <button
+                      key={sz}
+                      onClick={() => available && setSelectedSize(sz)}
+                      disabled={!available}
+                      className={`px-4 py-2 rounded border text-sm font-medium transition-colors relative
+                        ${selectedSize === sz && available ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}
+                        ${!available ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      style={{ minWidth: 48 }}
+                    >
+                      {sz}
+                      {!available && (
+                        <span className="absolute left-0 top-1/2 w-full h-0.5 bg-red-500 rotate-[-20deg]" style={{ top: '50%' }}></span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -377,7 +444,7 @@ const ProductDetail = () => {
             <div className="flex gap-4">
               <motion.button
                 onClick={handleAddToCart}
-                whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="btn-primary flex-1 text-lg py-4 rounded-[3px]"
               >
@@ -436,49 +503,30 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Product Details Tabs */}
-        <div className="mt-16">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8">
-              {['Description', 'Features', 'Care', 'Reviews'].map((tab) => (
-                <button
-                  key={tab}
-                  className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors"
-                >
-                  {tab}
-                </button>
+        {/* Reviews Section */}
+        <div className="mt-10">
+          <h2 className="text-xl font-bold mb-4">Reviews</h2>
+          {product.reviews && product.reviews.length === 0 && (
+            <div className="text-gray-500">No reviews yet.</div>
+          )}
+          {product.reviews && product.reviews.length > 0 && (
+            <ul className="divide-y divide-gray-200">
+              {product.reviews.map((review, idx) => (
+                <li key={idx} className="py-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-black">{review.user?.firstName || 'User'}</span>
+                    <span className="text-xs text-gray-400">{new Date(review.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex gap-1 mb-1">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-gray-300'}>★</span>
+                    ))}
+                  </div>
+                  <div className="text-gray-800">{review.comment}</div>
+                </li>
               ))}
-            </nav>
-          </div>
-
-          <div className="py-8">
-            <div className="prose max-w-none">
-              <h3 className="text-xl font-tenor font-bold text-gray-900 mb-4">Description</h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
-                {product.longDescription}
-              </p>
-
-              <h3 className="text-xl font-tenor font-bold text-gray-900 mb-4">Features</h3>
-              <ul className="space-y-2 mb-6">
-                {product.features.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-2 text-gray-600">
-                    <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              <h3 className="text-xl font-tenor font-bold text-gray-900 mb-4">Care Instructions</h3>
-              <ul className="space-y-2">
-                {product.care.map((instruction, index) => (
-                  <li key={index} className="flex items-center gap-2 text-gray-600">
-                    <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
-                    {instruction}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+            </ul>
+          )}/
         </div>
       </div>
 
@@ -516,4 +564,4 @@ const ProductDetail = () => {
   );
 };
 
-export default ProductDetail; 
+export default ProductDetail;

@@ -17,7 +17,7 @@ const Home = () => {
       name: "Cherry Blossom Sequin Cocktail Dress",
       price: 1295,
       originalPrice: 2590,
-      image: "/images/product-1.jpg",
+      image: "https://res.cloudinary.com/dhaegglsm/image/upload/v1760336008/site-assets/images/products/evening-gown-1.jpg",
       category: "Dresses",
       isNew: true,
       isSale: true
@@ -27,7 +27,7 @@ const Home = () => {
       name: "Cherry Blossom Embroidered Cap Sleeve Dress",
       price: 995,
       originalPrice: 1990,
-      image: "/images/product-2.jpg",
+      image: "https://res.cloudinary.com/dhaegglsm/image/upload/v1760335108/site-assets/images/products/blouse-1.jpg",
       category: "Dresses",
       isNew: true,
       isSale: true
@@ -36,7 +36,7 @@ const Home = () => {
       id: 3,
       name: "Signature Handbag",
       price: 895,
-      image: "/images/product-3.jpg",
+      image: "https://res.cloudinary.com/dhaegglsm/image/upload/v1760336009/site-assets/images/products/handbag-1.jpg",
       category: "Bags & Accessories",
       isNew: false,
       isSale: false
@@ -45,7 +45,7 @@ const Home = () => {
       id: 4,
       name: "Evening Gown with Floral Embroidery",
       price: 2495,
-      image: "/images/product-4.jpg",
+      image: "https://res.cloudinary.com/dhaegglsm/image/upload/v1760336857/site-assets/images/products/dresses/full_length_pieces/evening-gown-1.jpg",
       category: "Gowns & Caftans",
       isNew: true,
       isSale: false
@@ -63,22 +63,22 @@ const Home = () => {
   const gowns = [
     {
       name: 'Liquid Pattern Gown',
-      image: '/images/products/dresses/gowns/blue white liquid pattern gown.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335978/site-assets/images/products/dresses/gowns/blue_white_liquid_pattern_gown.jpg',
       price: 5200,
     },
     {
       name: 'Evening Gown',
-      image: '/images/products/dresses/full length pieces/evening-gown-1.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760336857/site-assets/images/products/dresses/full_length_pieces/evening-gown-1.jpg',
       price: 6400,
     },
     {
       name: 'Shiny Silver Dress',
-      image: '/images/products/dresses/full length pieces/shiny silver dress.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335960/site-assets/images/products/dresses/full_length_pieces/shiny_silver_dress.jpg',
       price: 5650,
     },
     {
       name: 'White Full Piece',
-      image: '/images/products/dresses/full length pieces/white full piece.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335964/site-assets/images/products/dresses/full_length_pieces/white_full_piece.jpg',
       price: 4200,
     },
   ];
@@ -86,72 +86,72 @@ const Home = () => {
   const kurtas = [
     {
       name: 'Classic Kurta',
-      image: '/images/products/dresses/kurtas/kurta.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335979/site-assets/images/products/dresses/kurtas/kurta.jpg',
       price: 3200,
     },
     {
       name: 'Frame Kurta',
-      image: '/images/products/dresses/full outfits/frame kurta.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335975/site-assets/images/products/dresses/full_outfits/frame_kurta.jpg',
       price: 3300,
-      altImage: '/images/products/dresses/full outfits/frame kurta 2.jpg',
+      altImage: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335974/site-assets/images/products/dresses/full_outfits/frame_kurta_2.jpg',
     },
     {
       name: 'Beige Outfit',
-      image: '/images/products/dresses/full outfits/biege outifit.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335967/site-assets/images/products/dresses/full_outfits/biege_outifit.jpg',
       price: 3500,
     },
     {
       name: 'Black Outfit',
-      image: '/images/products/dresses/full outfits/black outfit.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335970/site-assets/images/products/dresses/full_outfits/black_outfit.jpg',
       price: 3600,
-      altImage: '/images/products/dresses/full outfits/black outfit topper view.jpg',
+      altImage: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335968/site-assets/images/products/dresses/full_outfits/black_outfit_topper_view.jpg',
     },
   ];
 
   const onePiece = [
     {
       name: 'Maroon One Piece',
-      image: '/images/products/dresses/one piece/maroon one piece.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335981/site-assets/images/products/dresses/one_piece/maroon_one_piece.jpg',
       price: 4800,
-      altImage: '/images/products/dresses/one piece/maroon piece with top.jpg',
+      altImage: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335982/site-assets/images/products/dresses/one_piece/maroon_piece_with_top.jpg',
     },
     {
       name: 'One-side Sleeve Black',
-      image: '/images/products/dresses/one piece/one side sleeve black one piece.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335984/site-assets/images/products/dresses/one_piece/one_side_sleeve_black_one_piece.jpg',
       price: 5100,
     },
     {
       name: 'Side Cut Long Black',
-      image: '/images/products/dresses/full length pieces/side cut long piece black.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335963/site-assets/images/products/dresses/full_length_pieces/side_cut_long_piece_black.jpg',
       price: 4600,
-      altImage: '/images/products/dresses/full length pieces/side cut long piece black 2.jpg',
+      altImage: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335962/site-assets/images/products/dresses/full_length_pieces/side_cut_long_piece_black_2.jpg',
     },
     {
       name: 'Black Full Piece',
-      image: '/images/products/dresses/full length pieces/black full piece.jpg',
+      image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335957/site-assets/images/products/dresses/full_length_pieces/black_full_piece.jpg',
       price: 5000,
     },
   ];
 
   const skirts = [
-    { name: 'Beige Skirt', image: '/images/products/dresses/skirts/biege skirt.jpg', price: 2100 },
-    { name: 'Black & White Pattern', image: '/images/products/dresses/skirts/black and white pattern skirt.jpg', price: 2300 },
-    { name: 'Green Velvet Skirt', image: '/images/products/dresses/skirts/green valvet skirt.jpg', price: 2600 },
-    { name: 'Zebra Liquid Pattern', image: '/images/products/dresses/skirts/zebra liquid pattern skirt.jpg', price: 2400 },
+    { name: 'Beige Skirt', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335985/site-assets/images/products/dresses/skirts/biege_skirt.jpg', price: 2100 },
+    { name: 'Black & White Pattern', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335987/site-assets/images/products/dresses/skirts/black_and_white_pattern_skirt.jpg', price: 2300 },
+    { name: 'Green Velvet Skirt', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335997/site-assets/images/products/dresses/skirts/green_valvet_skirt.jpg', price: 2600 },
+    { name: 'Zebra Liquid Pattern', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760336002/site-assets/images/products/dresses/skirts/zebra_liquid_pattern_skirt.jpg', price: 2400 },
   ];
 
   const toppers = [
-    { name: 'Topper', image: '/images/products/dresses/toppers/Topper.jpg', price: 2800 },
-    { name: 'Scarf', image: '/images/products/dresses/full outfits/scarf-1.jpg', price: 1400 },
-    { name: 'Black Topper View', image: '/images/products/dresses/full outfits/black outfit topper view.jpg', price: 3000 },
-    { name: 'Black Outfit', image: '/images/products/dresses/full outfits/black outfit.jpg', price: 3000 },
+    { name: 'Topper', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760336003/site-assets/images/products/dresses/toppers/Topper.jpg', price: 2800 },
+    { name: 'Scarf', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335976/site-assets/images/products/dresses/full_outfits/scarf-1.jpg', price: 1400 },
+    { name: 'Black Topper View', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335968/site-assets/images/products/dresses/full_outfits/black_outfit_topper_view.jpg', price: 3000 },
+    { name: 'Black Outfit', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335970/site-assets/images/products/dresses/full_outfits/black_outfit.jpg', price: 3000 },
   ];
 
   const bottoms = [
-    { name: 'Bottom', image: '/images/products/dresses/bottom/bottom.webp', price: 1900 },
-    { name: 'Black Skirt 1', image: '/images/products/dresses/skirts/black skirt 1-1.jpg', price: 2200 },
-    { name: 'Black Skirt 2', image: '/images/products/dresses/skirts/black skirt 2-1.jpg', price: 2200 },
-    { name: 'White Skirt', image: '/images/products/dresses/skirts/white skirt 1-3.jpg', price: 2100 },
+    { name: 'Bottom', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335115/site-assets/images/products/dresses/bottom/bottom.jpg', price: 1900 },
+    { name: 'Black Skirt 1', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760335988/site-assets/images/products/dresses/skirts/black_skirt_1-1.jpg', price: 2200 },
+    { name: 'Black Skirt 2', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760336889/site-assets/images/products/dresses/skirts/black_skirt_2-1.jpg', price: 2200 },
+    { name: 'White Skirt', image: 'https://res.cloudinary.com/dhaegglsm/image/upload/v1760336000/site-assets/images/products/dresses/skirts/white_skirt_1-3.jpg', price: 2100 },
   ];
 
   return (

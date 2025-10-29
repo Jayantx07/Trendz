@@ -13,13 +13,15 @@ import {
   Star
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { slugify, localProducts } from '../utils/localProducts.js';
+import { slugify } from '../utils/localProducts.js';
 import LazyImage from '../components/common/LazyImage.jsx';
 import { apiFetch } from '../utils/api.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useWishlist } from '../context/WishlistContext.jsx';
+import { useMedia } from '../context/MediaMapContext.jsx';
 
 const Products = () => {
+  const { resolve, ready } = useMedia();
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +32,8 @@ const Products = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const navigate = useNavigate();
+
+  const getLocalFirstImage = () => '';
 
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
@@ -79,43 +83,8 @@ const Products = () => {
     setLoading(true);
     setError(null);
 
-    // Build local catalog list once for instant render
-    const localAsProducts = (localProducts || []).map((p, idx) => ({
-      id: p.id || idx + 1,
-      name: p.name,
-      price: p.price,
-      salePrice: p.salePrice || null,
-      image: (p.images && p.images[0]) || '',
-      category: p.category,
-      isNew: p.isNew || false,
-      onSale: p.onSale || false,
-      colors: p.colors || [],
-      sizes: p.sizes || [],
-      rating: p.rating || 4,
-      reviewCount: p.reviewCount || 0,
-    }));
-
-    // Apply lightweight filtering locally for immediate display
-    const byQuery = (list) => query
-      ? list.filter(p => (`${p.name} ${p.category}`).toLowerCase().includes(query.toLowerCase()))
-      : list;
-    const byCategory = (list) => {
-      const cats = resolveCategoryList(filters.category);
-      if (!cats) return list;
-      const acceptable = cats.map((c) => String(c).toLowerCase());
-      const filtered = list.filter(p => acceptable.includes(String(p.category).toLowerCase()));
-      // If alias produced nothing (e.g., mismatch), show all instead of empty
-      return filtered.length > 0 ? filtered : list;
-    };
-    const locallyFiltered = byCategory(byQuery(localAsProducts));
-    setProducts(locallyFiltered.length > 0 ? locallyFiltered : localAsProducts);
-    setHasMore(false);
-
-    // If API available, enhance results; abort quickly to avoid delays
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 600);
 
-    // Build query string from filters
     const params = new URLSearchParams();
     if (query) params.append('q', query);
     if (filters.category) params.append('category', filters.category);
@@ -128,7 +97,7 @@ const Products = () => {
     if (filters.newArrival) params.append('newArrivals', 'true');
     if (sortBy && sortBy !== 'relevance') params.append('sort', sortBy);
     params.append('page', currentPage);
-    params.append('limit', 12);
+    params.append('limit', 24);
 
     apiFetch(`/products?${params.toString()}`, { signal: controller.signal })
       .then(res => {
@@ -136,23 +105,23 @@ const Products = () => {
         return res.json();
       })
       .then(data => {
-        clearTimeout(timeoutId);
-        const apiList = Array.isArray(data?.products) ? data.products : [];
-        if (apiList.length > 0) {
-          setProducts(apiList);
-          setHasMore(Boolean(data.pagination?.hasNext));
-        }
+        const apiList = Array.isArray(data?.products) ? data.products.map(p => {
+          const raw = p.primaryImage || (p.images && p.images[0]?.url) || p.image || '';
+          const filled = raw ? resolve(raw) : '';
+          return { ...p, image: filled, primaryImage: filled };
+        }) : [];
+        setProducts(apiList);
+        setHasMore(Boolean(data.pagination?.hasNext));
       })
-      .catch(() => {
-        // Keep local results if API errors or times out
+      .catch((err) => {
+        setError(err.message || 'Failed to fetch products');
+        setProducts([]);
+        setHasMore(false);
       })
       .finally(() => setLoading(false));
 
-    return () => {
-      clearTimeout(timeoutId);
-      controller.abort();
-    };
-  }, [filters, sortBy, currentPage, query]);
+    return () => controller.abort();
+  }, [filters, sortBy, currentPage, query, ready, resolve]);
 
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
@@ -195,14 +164,15 @@ const Products = () => {
   };
 
   const renderProductCard = (product) => {
-    const slug = slugify(product.name || product.id);
-    const go = () => navigate(`/products/${slug}`);
-    const imageSrc = product.image || product.primaryImage || '';
+  // Always prefer backend slug, fallback to _id if missing
+  const slug = product.slug || (product._id ? product._id : slugify(product.name || product.id));
+  const go = () => navigate(`/products/${slug}`);
+    const imageSrc = resolve(product.image || product.primaryImage || '');
     const curPrice = product.salePrice || product.price || product.basePrice;
     const origPrice = product.salePrice ? (product.price || product.basePrice) : null;
     return (
     <motion.div
-      key={product.id}
+      key={product._id || product.slug || slug}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="product-card-wrapper group"
@@ -249,15 +219,14 @@ const Products = () => {
               <ShoppingBag className="w-4 h-4 text-black" />
             </motion.button>
             
-            <button onClick={go}>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="product-wishlist"
-              >
-                <Eye className="w-4 h-4 text-black" />
-              </motion.button>
-            </button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={go}
+              className="product-wishlist"
+            >
+              <Eye className="w-4 h-4 text-black" />
+            </motion.button>
           </div>
         </div>
 
@@ -328,11 +297,11 @@ const Products = () => {
   };
 
   const renderProductList = (product) => {
-    const slug = slugify(product.name || product.id);
+    const slug = product.slug || slugify(product.name || product._id || product.id);
     const go = () => navigate(`/products/${slug}`);
     return (
     <motion.div
-      key={product.id}
+      key={product._id || slug}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
@@ -340,7 +309,7 @@ const Products = () => {
       <div className="flex gap-6">
         <div className="w-32 h-32 flex-shrink-0">
           <LazyImage
-            src={product.image || product.primaryImage}
+            src={resolve(product.image || product.primaryImage)}
             alt={product.name}
             className="w-full h-full object-cover rounded-lg"
           />

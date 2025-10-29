@@ -1,0 +1,278 @@
+{
+  "Background Video.mp4": {
+    "url": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337409/site-assets/Background_Video.mp4?_a=BAMAK+a40",
+    "publicId": "site-assets/Background_Video",
+    "resourceType": "video",
+    "posterUrl": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337409/site-assets/Background_Video.jpg?_a=BAMAK+a40"
+  },
+  "images/logo/Whatsapp.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337412/site-assets/images/logo/Whatsapp.jpg",
+    "publicId": "site-assets/images/logo/Whatsapp",
+    "resourceType": "image"
+  },
+  "images/Logo black.png": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337413/site-assets/images/Logo_black.png",
+    "publicId": "site-assets/images/Logo_black",
+    "resourceType": "image"
+  },
+  "images/Logo white.png": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337414/site-assets/images/Logo_white.png",
+    "publicId": "site-assets/images/Logo_white",
+    "resourceType": "image"
+  },
+  "images/products/blouse-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337415/site-assets/images/products/blouse-1.jpg",
+    "publicId": "site-assets/images/products/blouse-1",
+    "resourceType": "image"
+  },
+  "images/products/bottom.webp": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337417/site-assets/images/products/bottom.jpg",
+    "publicId": "site-assets/images/products/bottom",
+    "resourceType": "image"
+  },
+  "images/products/bridal-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337419/site-assets/images/products/bridal-1.jpg",
+    "publicId": "site-assets/images/products/bridal-1",
+    "resourceType": "image"
+  },
+  "images/products/day-dress-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337420/site-assets/images/products/day-dress-1.jpg",
+    "publicId": "site-assets/images/products/day-dress-1",
+    "resourceType": "image"
+  },
+  "images/products/dresses/bottom/bottom.webp": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337423/site-assets/images/products/dresses/bottom/bottom.jpg",
+    "publicId": "site-assets/images/products/dresses/bottom/bottom",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full length pieces/black full piece.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337424/site-assets/images/products/dresses/full_length_pieces/black_full_piece.jpg",
+    "publicId": "site-assets/images/products/dresses/full_length_pieces/black_full_piece",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full length pieces/evening-gown-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337425/site-assets/images/products/dresses/full_length_pieces/evening-gown-1.jpg",
+    "publicId": "site-assets/images/products/dresses/full_length_pieces/evening-gown-1",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full length pieces/green zebra liquid pattern side cut full length piece.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337426/site-assets/images/products/dresses/full_length_pieces/green_zebra_liquid_pattern_side_cut_full_length_piece.jpg",
+    "publicId": "site-assets/images/products/dresses/full_length_pieces/green_zebra_liquid_pattern_side_cut_full_length_piece",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full length pieces/shiny silver dress.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337428/site-assets/images/products/dresses/full_length_pieces/shiny_silver_dress.jpg",
+    "publicId": "site-assets/images/products/dresses/full_length_pieces/shiny_silver_dress",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full length pieces/side cut long piece black 2.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337429/site-assets/images/products/dresses/full_length_pieces/side_cut_long_piece_black_2.jpg",
+    "publicId": "site-assets/images/products/dresses/full_length_pieces/side_cut_long_piece_black_2",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full length pieces/side cut long piece black.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337430/site-assets/images/products/dresses/full_length_pieces/side_cut_long_piece_black.jpg",
+    "publicId": "site-assets/images/products/dresses/full_length_pieces/side_cut_long_piece_black",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full length pieces/white full piece.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337431/site-assets/images/products/dresses/full_length_pieces/white_full_piece.jpg",
+    "publicId": "site-assets/images/products/dresses/full_length_pieces/white_full_piece",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full length pieces/zebra liquid pattern full lenght piece.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337432/site-assets/images/products/dresses/full_length_pieces/zebra_liquid_pattern_full_lenght_piece.jpg",
+    "publicId": "site-assets/images/products/dresses/full_length_pieces/zebra_liquid_pattern_full_lenght_piece",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full outfits/biege outifit.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337433/site-assets/images/products/dresses/full_outfits/biege_outifit.jpg",
+    "publicId": "site-assets/images/products/dresses/full_outfits/biege_outifit",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full outfits/black outfit topper view.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337434/site-assets/images/products/dresses/full_outfits/black_outfit_topper_view.jpg",
+    "publicId": "site-assets/images/products/dresses/full_outfits/black_outfit_topper_view",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full outfits/black outfit.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337436/site-assets/images/products/dresses/full_outfits/black_outfit.jpg",
+    "publicId": "site-assets/images/products/dresses/full_outfits/black_outfit",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full outfits/day-dress-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337438/site-assets/images/products/dresses/full_outfits/day-dress-1.jpg",
+    "publicId": "site-assets/images/products/dresses/full_outfits/day-dress-1",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full outfits/frame kurta 2.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337440/site-assets/images/products/dresses/full_outfits/frame_kurta_2.jpg",
+    "publicId": "site-assets/images/products/dresses/full_outfits/frame_kurta_2",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full outfits/frame kurta.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337441/site-assets/images/products/dresses/full_outfits/frame_kurta.jpg",
+    "publicId": "site-assets/images/products/dresses/full_outfits/frame_kurta",
+    "resourceType": "image"
+  },
+  "images/products/dresses/full outfits/scarf-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337442/site-assets/images/products/dresses/full_outfits/scarf-1.jpg",
+    "publicId": "site-assets/images/products/dresses/full_outfits/scarf-1",
+    "resourceType": "image"
+  },
+  "images/products/dresses/gowns/blue white liquid pattern gown.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337443/site-assets/images/products/dresses/gowns/blue_white_liquid_pattern_gown.jpg",
+    "publicId": "site-assets/images/products/dresses/gowns/blue_white_liquid_pattern_gown",
+    "resourceType": "image"
+  },
+  "images/products/dresses/kurtas/kurta.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337445/site-assets/images/products/dresses/kurtas/kurta.jpg",
+    "publicId": "site-assets/images/products/dresses/kurtas/kurta",
+    "resourceType": "image"
+  },
+  "images/products/dresses/one piece/maroon one piece.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337446/site-assets/images/products/dresses/one_piece/maroon_one_piece.jpg",
+    "publicId": "site-assets/images/products/dresses/one_piece/maroon_one_piece",
+    "resourceType": "image"
+  },
+  "images/products/dresses/one piece/maroon piece with top.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337447/site-assets/images/products/dresses/one_piece/maroon_piece_with_top.jpg",
+    "publicId": "site-assets/images/products/dresses/one_piece/maroon_piece_with_top",
+    "resourceType": "image"
+  },
+  "images/products/dresses/one piece/one side sleeve black one piece.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337448/site-assets/images/products/dresses/one_piece/one_side_sleeve_black_one_piece.jpg",
+    "publicId": "site-assets/images/products/dresses/one_piece/one_side_sleeve_black_one_piece",
+    "resourceType": "image"
+  },
+  "images/products/dresses/skirts/biege skirt.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337450/site-assets/images/products/dresses/skirts/biege_skirt.jpg",
+    "publicId": "site-assets/images/products/dresses/skirts/biege_skirt",
+    "resourceType": "image"
+  },
+  "images/products/dresses/skirts/black and white pattern skirt.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337452/site-assets/images/products/dresses/skirts/black_and_white_pattern_skirt.jpg",
+    "publicId": "site-assets/images/products/dresses/skirts/black_and_white_pattern_skirt",
+    "resourceType": "image"
+  },
+  "images/products/dresses/skirts/black skirt 1-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337453/site-assets/images/products/dresses/skirts/black_skirt_1-1.jpg",
+    "publicId": "site-assets/images/products/dresses/skirts/black_skirt_1-1",
+    "resourceType": "image"
+  },
+  "images/products/dresses/skirts/black skirt 2-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337456/site-assets/images/products/dresses/skirts/black_skirt_2-1.jpg",
+    "publicId": "site-assets/images/products/dresses/skirts/black_skirt_2-1",
+    "resourceType": "image"
+  },
+  "images/products/dresses/skirts/black skirt back.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337457/site-assets/images/products/dresses/skirts/black_skirt_back.jpg",
+    "publicId": "site-assets/images/products/dresses/skirts/black_skirt_back",
+    "resourceType": "image"
+  },
+  "images/products/dresses/skirts/dresses.webp": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337458/site-assets/images/products/dresses/skirts/dresses.jpg",
+    "publicId": "site-assets/images/products/dresses/skirts/dresses",
+    "resourceType": "image"
+  },
+  "images/products/dresses/skirts/green skirt.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337459/site-assets/images/products/dresses/skirts/green_skirt.jpg",
+    "publicId": "site-assets/images/products/dresses/skirts/green_skirt",
+    "resourceType": "image"
+  },
+  "images/products/dresses/skirts/green valvet skirt.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337460/site-assets/images/products/dresses/skirts/green_valvet_skirt.jpg",
+    "publicId": "site-assets/images/products/dresses/skirts/green_valvet_skirt",
+    "resourceType": "image"
+  },
+  "images/products/dresses/skirts/masks skirt 2.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337461/site-assets/images/products/dresses/skirts/masks_skirt_2.jpg",
+    "publicId": "site-assets/images/products/dresses/skirts/masks_skirt_2",
+    "resourceType": "image"
+  },
+  "images/products/dresses/skirts/white skirt 1-3.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337463/site-assets/images/products/dresses/skirts/white_skirt_1-3.jpg",
+    "publicId": "site-assets/images/products/dresses/skirts/white_skirt_1-3",
+    "resourceType": "image"
+  },
+  "images/products/dresses/skirts/zebra liquid pattern skirt.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337464/site-assets/images/products/dresses/skirts/zebra_liquid_pattern_skirt.jpg",
+    "publicId": "site-assets/images/products/dresses/skirts/zebra_liquid_pattern_skirt",
+    "resourceType": "image"
+  },
+  "images/products/dresses/toppers/Topper.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337465/site-assets/images/products/dresses/toppers/Topper.jpg",
+    "publicId": "site-assets/images/products/dresses/toppers/Topper",
+    "resourceType": "image"
+  },
+  "images/products/dresses.webp": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337466/site-assets/images/products/dresses.jpg",
+    "publicId": "site-assets/images/products/dresses",
+    "resourceType": "image"
+  },
+  "images/products/earrings-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337467/site-assets/images/products/earrings-1.jpg",
+    "publicId": "site-assets/images/products/earrings-1",
+    "resourceType": "image"
+  },
+  "images/products/evening-gown-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337468/site-assets/images/products/evening-gown-1.jpg",
+    "publicId": "site-assets/images/products/evening-gown-1",
+    "resourceType": "image"
+  },
+  "images/products/handbag-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337470/site-assets/images/products/handbag-1.jpg",
+    "publicId": "site-assets/images/products/handbag-1",
+    "resourceType": "image"
+  },
+  "images/products/jacket-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337471/site-assets/images/products/jacket-1.jpg",
+    "publicId": "site-assets/images/products/jacket-1",
+    "resourceType": "image"
+  },
+  "images/products/kurta.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337473/site-assets/images/products/kurta.jpg",
+    "publicId": "site-assets/images/products/kurta",
+    "resourceType": "image"
+  },
+  "images/products/scarf-1.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337474/site-assets/images/products/scarf-1.jpg",
+    "publicId": "site-assets/images/products/scarf-1",
+    "resourceType": "image"
+  },
+  "images/products/Topper.jpg": {
+    "url": "https://res.cloudinary.com/dhaegglsm/image/upload/v1760337475/site-assets/images/products/Topper.jpg",
+    "publicId": "site-assets/images/products/Topper",
+    "resourceType": "image"
+  },
+  "videos/product 01.mp4": {
+    "url": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337494/site-assets/videos/product_01.mp4?_a=BAMAK+a40",
+    "publicId": "site-assets/videos/product_01",
+    "resourceType": "video",
+    "posterUrl": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337494/site-assets/videos/product_01.jpg?_a=BAMAK+a40"
+  },
+  "videos/reel 01.mp4": {
+    "url": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337512/site-assets/videos/reel_01.mp4?_a=BAMAK+a40",
+    "publicId": "site-assets/videos/reel_01",
+    "resourceType": "video",
+    "posterUrl": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337512/site-assets/videos/reel_01.jpg?_a=BAMAK+a40"
+  },
+  "videos/REEL 02.mp4": {
+    "url": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337532/site-assets/videos/REEL_02.mp4?_a=BAMAK+a40",
+    "publicId": "site-assets/videos/REEL_02",
+    "resourceType": "video",
+    "posterUrl": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337532/site-assets/videos/REEL_02.jpg?_a=BAMAK+a40"
+  },
+  "videos/reel 03.mp4": {
+    "url": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337554/site-assets/videos/reel_03.mp4?_a=BAMAK+a40",
+    "publicId": "site-assets/videos/reel_03",
+    "resourceType": "video",
+    "posterUrl": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337554/site-assets/videos/reel_03.jpg?_a=BAMAK+a40"
+  },
+  "videos/reel 05.mp4": {
+    "url": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337016/site-assets/videos/reel_05.mp4?_a=BAMAK+a40",
+    "publicId": "site-assets/videos/reel_05",
+    "resourceType": "video",
+    "posterUrl": "https://res.cloudinary.com/dhaegglsm/video/upload/v1760337016/site-assets/videos/reel_05.jpg?_a=BAMAK+a40"
+  }
+}

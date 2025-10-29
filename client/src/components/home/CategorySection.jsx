@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useMedia } from '../../context/MediaMapContext.jsx';
 
 const items = [
   {
@@ -16,16 +17,19 @@ const items = [
   {
     name: 'Tops',
     href: '/products?category=Tops',
-    img: '/images/products/Topper.jpg',
+    img: '/images/products/dresses/toppers/Topper.jpg',
   },
   {
     name: 'Bottoms',
     href: '/products?category=Bottoms',
-    img: '/images/products/bottom.webp',
+    img: '/images/products/dresses/bottom/bottom.webp',
   },
 ];
 
-const CategoryCard = ({ item, index }) => (
+const CategoryCard = ({ item, index }) => {
+  const { resolve } = useMedia();
+  const src = resolve(item.img);
+  return (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -35,7 +39,7 @@ const CategoryCard = ({ item, index }) => (
     <Link to={item.href} className="group block">
       <div className="overflow-hidden rounded-md">
         <img
-          src={item.img}
+          src={src}
           alt={item.name}
           className="w-full aspect-[3/4] object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -47,6 +51,7 @@ const CategoryCard = ({ item, index }) => (
     </Link>
   </motion.div>
 );
+}
 
 const CategorySection = () => {
   return (

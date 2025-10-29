@@ -53,6 +53,10 @@ const productSchema = new mongoose.Schema({
       required: false,
       index: true
     },
+    colorName: {
+      type: String,
+      required: false
+    },
     assetType: {
       type: String,
       enum: ['image'],

@@ -3,6 +3,8 @@ const multer = require('multer');
 const auth = require('../middleware/auth');
 const requireAdmin = require('../middleware/admin');
 const { initCloudinary, cloudinary } = require('../config/cloudinary');
+const fs = require('fs');
+const path = require('path');
 
 initCloudinary();
 const router = express.Router();
@@ -79,3 +81,18 @@ router.delete('/:publicId', auth, requireAdmin, async (req, res) => {
 });
 
 module.exports = router;
+
+// Public: return the migration-output mapping so client can resolve legacy paths
+router.get('/map', async (req, res) => {
+  try {
+    const mapPath = path.join(__dirname, '..', 'scripts', 'migration-output.json');
+    if (!fs.existsSync(mapPath)) return res.json({ assets: {} });
+    const raw = fs.readFileSync(mapPath, 'utf8');
+    let data = {};
+    try { data = JSON.parse(raw); } catch (_) { data = {}; }
+    res.json({ assets: data });
+  } catch (err) {
+    console.error('Read media map error:', err);
+    res.status(500).json({ message: 'Failed to read media map' });
+  }
+});

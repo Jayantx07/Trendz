@@ -25,6 +25,8 @@ import { AuthProvider } from './context/AuthContext.jsx';
 import { CartProvider } from './context/CartContext.jsx';
 import { WishlistProvider } from './context/WishlistContext.jsx';
 import { SearchProvider } from './context/SearchContext.jsx';
+import { MediaMapProvider } from './context/MediaMapContext.jsx';
+import { SiteConfigProvider } from './context/SiteConfigContext.jsx';
 
 function App() {
   const location = useLocation();
@@ -34,6 +36,8 @@ function App() {
       <CartProvider>
         <WishlistProvider>
           <SearchProvider>
+            <MediaMapProvider>
+            <SiteConfigProvider>
             <div className="min-h-screen flex flex-col">
               <ApiStatus />
               <Navbar />
@@ -59,6 +63,8 @@ function App() {
               {!hideFooter && <Footer />}
               <WhatsAppButton phone="919876543210" message="Hi, I need help with Trendz." />
             </div>
+            </SiteConfigProvider>
+            </MediaMapProvider>
           </SearchProvider>
         </WishlistProvider>
       </CartProvider>

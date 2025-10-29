@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSiteConfig } from '../../context/SiteConfigContext.jsx';
 
 const HeroSection = () => {
+  const { config } = useSiteConfig();
+  const heroUrl = config?.heroVideo?.url || 'https://res.cloudinary.com/dhaegglsm/video/upload/v1760336839/site-assets/Background_Video.mp4';
+  const heroPoster = config?.heroVideo?.poster || 'https://res.cloudinary.com/dhaegglsm/video/upload/v1760336839/site-assets/Background_Video.jpg';
   return (
     <section className="relative h-screen overflow-hidden">
       {/* Video Background */}
@@ -13,9 +17,9 @@ const HeroSection = () => {
           loop
           playsInline
           preload="none"
-          poster="https://res.cloudinary.com/dhaegglsm/video/upload/v1760336839/site-assets/Background_Video.jpg"
+          poster={heroPoster}
         >
-          <source src="https://res.cloudinary.com/dhaegglsm/video/upload/v1760336839/site-assets/Background_Video.mp4" type="video/mp4" />
+          <source src={heroUrl} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       </div>

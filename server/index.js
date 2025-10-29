@@ -51,6 +51,7 @@ app.use(cookieParser());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/media', require('./routes/media'));
+app.use('/api/site-config', require('./routes/siteConfig'));
 app.use('/api/admin/products', require('./routes/adminProducts'));
 const cartRoutes = require('./routes/cart');
 app.use('/api/cart', cartRoutes);
