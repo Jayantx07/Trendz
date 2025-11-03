@@ -72,6 +72,10 @@ router.delete('/:publicId', auth, requireAdmin, async (req, res) => {
   try {
     const { publicId } = req.params;
     const { type = 'image' } = req.query; // image | video
+    if (!(process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET && process.env.CLOUDINARY_CLOUD_NAME)) {
+      console.warn('Cloudinary not configured, skipping delete for', publicId);
+      return res.json({ result: 'skipped', message: 'Cloudinary not configured' });
+    }
     const result = await cloudinary.uploader.destroy(publicId, { resource_type: type });
     res.json({ result });
   } catch (err) {

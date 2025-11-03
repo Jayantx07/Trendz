@@ -11,10 +11,10 @@ const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB
 mongoose.set('strictQuery', true);
-const MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI) {
-  console.error('Missing MONGODB_URI in environment. Please set it in server/.env');
-  process.exit(1);
+// Allow a local default for development if MONGODB_URI is not provided
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/trendz_dev';
+if (!process.env.MONGODB_URI) {
+  console.warn('Warning: MONGODB_URI not set in environment. Falling back to local default:', MONGODB_URI);
 }
 mongoose
   .connect(MONGODB_URI, {
@@ -24,7 +24,8 @@ mongoose
   .then(() => console.log('MongoDB connected'))
   .catch((err) => {
     console.error('MongoDB connection error:', err.message);
-    process.exit(1);
+    // Keep process running so developer can still access non-DB routes and see errors in logs.
+    // Do not exit here to make development a bit more forgiving; DB-required routes will fail with errors.
   });
 
 // Middleware

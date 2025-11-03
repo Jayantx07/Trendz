@@ -70,9 +70,17 @@ router.delete('/:id', auth, requireAdmin, async (req, res) => {
 
     if (purgeAssets === 'true') {
       // delete images
-      await Promise.all((product.images || []).map(img => img.publicId ? cloudinary.uploader.destroy(img.publicId, { resource_type: 'image' }) : null));
+      if (process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET && process.env.CLOUDINARY_CLOUD_NAME) {
+        await Promise.all((product.images || []).map(img => img.publicId ? cloudinary.uploader.destroy(img.publicId, { resource_type: 'image' }) : null));
+      } else {
+        console.warn('Cloudinary not configured, skipping remote image deletion');
+      }
       // delete videos
-      await Promise.all((product.videos || []).map(v => v.publicId ? cloudinary.uploader.destroy(v.publicId, { resource_type: 'video' }) : null));
+      if (process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET && process.env.CLOUDINARY_CLOUD_NAME) {
+        await Promise.all((product.videos || []).map(v => v.publicId ? cloudinary.uploader.destroy(v.publicId, { resource_type: 'video' }) : null));
+      } else {
+        console.warn('Cloudinary not configured, skipping remote video deletion');
+      }
     }
 
     await product.deleteOne();
@@ -123,14 +131,51 @@ router.delete('/:id/images/:publicId', auth, requireAdmin, async (req, res) => {
     const product = await Product.findById(id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
+    // Remove from main product images
+    let removed = false;
+    const beforeCount = product.images.length;
     product.images = product.images.filter(img => img.publicId !== publicId);
-    await product.save();
+    if (product.images.length !== beforeCount) removed = true;
 
-    if (deleteFromCloudinary === 'true') {
-      await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+    // Remove from all variants' images arrays (if present)
+    let variantRemoved = false;
+    if (Array.isArray(product.variants)) {
+      product.variants.forEach(variant => {
+        if (Array.isArray(variant.images)) {
+          const vBefore = variant.images.length;
+          // Support images stored as objects ({publicId, url,...}) or as strings (url)
+          variant.images = variant.images.filter(img => {
+            if (!img) return true;
+            if (typeof img === 'string') {
+              // if stored as URL string, remove when url contains the publicId
+              return !img.includes(publicId);
+            }
+            // object case
+            return img.publicId !== publicId;
+          });
+          if (variant.images.length !== vBefore) variantRemoved = true;
+        }
+      });
     }
 
-    res.json({ message: 'Image removed', images: product.images });
+    await product.save();
+
+    if (deleteFromCloudinary === 'true' && (removed || variantRemoved)) {
+      if (process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET && process.env.CLOUDINARY_CLOUD_NAME) {
+        await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+      } else {
+        console.warn('Cloudinary not configured, cannot delete remote asset:', publicId);
+      }
+    }
+
+    res.json({
+      message: 'Image removed',
+      images: product.images,
+      variants: product.variants.map(v => ({
+        _id: v._id,
+        images: v.images
+      }))
+    });
   } catch (err) {
     console.error('Remove image error:', err);
     res.status(500).json({ message: 'Failed to remove image', error: err.message });

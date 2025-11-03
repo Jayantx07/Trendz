@@ -11,7 +11,8 @@ const AdminInner = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [activeColor, setActiveColor] = useState('');
-  const [showAllImages, setShowAllImages] = useState(false);
+  // Store uploaded images per variant in local state for instant UI update
+  const [variantImages, setVariantImages] = useState({}); // { [variantKey]: [images] }
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageColor, setImageColor] = useState('');
   const [imageSizes, setImageSizes] = useState([]);
@@ -98,6 +99,28 @@ const AdminInner = () => {
   };
 
   useEffect(() => { fetchProducts(); }, []);
+
+  // Sync variantImages state with product images when a product is selected, but only if local state is empty (prevents overwriting after upload/remove)
+  useEffect(() => {
+    if (!selectedProduct || !Array.isArray(selectedProduct.images)) {
+      setVariantImages({});
+      return;
+    }
+    setVariantImages(prev => {
+      // If prev is empty, initialize from backend
+      if (Object.keys(prev).length === 0) {
+        const imagesByVariant = {};
+        selectedProduct.images.forEach(img => {
+          const key = `${img.colorName || ''}_${img.size || ''}`;
+          if (!imagesByVariant[key]) imagesByVariant[key] = [];
+          imagesByVariant[key].push(img);
+        });
+        return imagesByVariant;
+      }
+      // Otherwise, keep local state (for instant UI after upload/remove)
+      return prev;
+    });
+  }, [selectedProduct]);
 
   useEffect(() => {
     if (!selectedProduct) { setDraft(null); return; }
@@ -533,9 +556,21 @@ const AdminInner = () => {
                     <div className="flex flex-col gap-6">
                       {(draft.variants || []).map((variant, idx) => {
                         // Find images/videos for this variant (by color name and size)
-                        const variantMedia = (selectedProduct.images || []).filter(img =>
-                          img.colorName === variant.color?.name && img.size === variant.size
-                        );
+                        // Use local state for instant update, fallback to product images
+                        // Normalize keys for both variant and images
+                        const norm = v => (v || '').toString().trim().toLowerCase();
+                        const variantKey = `${norm(variant.color?.name)}_${norm(variant.size)}`;
+                        // Always use local state for images if available, fallback to backend only if local state is empty
+                        let variantMedia = variantImages[variantKey];
+                        if (!variantMedia || variantMedia.length === 0) {
+                          variantMedia = (selectedProduct.images || []).filter(img =>
+                            norm(img.colorName) === norm(variant.color?.name) && norm(img.size) === norm(variant.size)
+                          );
+                        }
+                        // Fallback: if still no images, show all images for debugging
+                        if ((!variantMedia || variantMedia.length === 0) && (selectedProduct.images || []).length > 0) {
+                          variantMedia = selectedProduct.images;
+                        }
                         return (
                           <div key={idx} className="border-b pb-4 mb-2">
                             <div className="flex items-center gap-6">
@@ -616,6 +651,16 @@ const AdminInner = () => {
                                         colorName: variant.color?.name,
                                         size: variant.size
                                       }));
+                                    // Update local state for instant UI
+                                    setVariantImages(prev => ({
+                                      ...prev,
+                                      [variantKey]: [
+                                        ...(prev[variantKey] || []),
+                                        ...images,
+                                        ...videos
+                                      ]
+                                    }));
+                                    // Persist to backend
                                     if (images.length) {
                                       const res = await apiAuthFetch(`/admin/products/${selectedProduct._id}/images`, {
                                         method: 'POST',
@@ -632,7 +677,7 @@ const AdminInner = () => {
                                       });
                                       if (!resV.ok) throw new Error('Failed to attach videos');
                                     }
-                                    await fetchProducts();
+                                    // Do NOT call fetchProducts here, to avoid overwriting local state and causing flicker
                                   } catch (e) {
                                     setError(e.message);
                                   } finally {
@@ -642,18 +687,47 @@ const AdminInner = () => {
                                 }}
                                 className="w-full"
                               />
-                              {/* Show images/videos for this variant */}
+                              {/* Show images/videos for this variant with drag-and-drop sorting */}
                               <div className="flex flex-wrap gap-2 mt-2">
                                 {variantMedia.length === 0 && <span className="text-xs text-gray-400">No media uploaded for this variant.</span>}
                                 {variantMedia.map((media, mIdx) => (
-                                  <div key={media.publicId || media.url} className="relative group">
+                                  <div
+                                    key={media.publicId || media.url}
+                                    className="relative group cursor-move"
+                                    draggable
+                                    onDragStart={e => {
+                                      e.dataTransfer.setData('text/plain', mIdx);
+                                    }}
+                                    onDragOver={e => e.preventDefault()}
+                                    onDrop={e => {
+                                      e.preventDefault();
+                                      const fromIdx = Number(e.dataTransfer.getData('text/plain'));
+                                      if (fromIdx === mIdx) return;
+                                      setVariantImages(prev => {
+                                        const arr = [...(prev[variantKey] || variantMedia)];
+                                        const [moved] = arr.splice(fromIdx, 1);
+                                        arr.splice(mIdx, 0, moved);
+                                        return { ...prev, [variantKey]: arr };
+                                      });
+                                    }}
+                                  >
                                     {media.url.match(/\.(mp4|webm|ogg)$/i) ? (
                                       <video src={media.url} controls className="w-24 h-24 object-cover rounded" />
                                     ) : (
                                       <LazyImage src={media.url} alt={media.alt || ''} className="w-24 h-24 object-cover rounded" />
                                     )}
                                     <button
-                                      onClick={()=>removeImage(selectedProduct._id, media.publicId)}
+                                      onClick={async ()=>{
+                                        await removeImage(selectedProduct._id, media.publicId);
+                                        // Remove from local state instantly
+                                        setVariantImages(prev => {
+                                          const arr = [...(prev[variantKey] || [])];
+                                          const idx = arr.findIndex(m => m.publicId === media.publicId);
+                                          if (idx !== -1) arr.splice(idx, 1);
+                                          return { ...prev, [variantKey]: arr };
+                                        });
+                                        // Do NOT call fetchProducts here, to avoid overwriting local state and causing flicker
+                                      }}
                                       className="absolute top-1 right-1 bg-white/80 hover:bg-white text-red-600 text-xs px-1 py-0.5 rounded hidden group-hover:block"
                                     >Remove</button>
                                     {media.isPrimary && (
@@ -671,28 +745,7 @@ const AdminInner = () => {
                   </div>
                 )}
 
-                {/* Images Grid (filtered by Active Color unless Show all) */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {((selectedProduct.images || []).filter(img => showAllImages || !activeColor || (img.colorName || '') === activeColor)).map((img, idx) => (
-                    <div key={img.publicId || img.url} className="relative group">
-                      <LazyImage src={img.url} alt={img.alt || ''} className="w-full h-40 object-cover rounded" />
-                      <button
-                        onClick={()=>removeImage(selectedProduct._id, img.publicId)}
-                        className="absolute top-2 right-2 bg-white/80 hover:bg-white text-red-600 text-xs px-2 py-1 rounded hidden group-hover:block"
-                      >Remove</button>
-                      <button
-                        onClick={()=>makePrimary(selectedProduct._id, img.publicId, idx)}
-                        className="absolute top-2 left-2 bg-white/80 hover:bg-white text-black text-xs px-2 py-1 rounded hidden group-hover:block"
-                      >Make Primary</button>
-                      {img.colorName && (
-                        <span className="absolute bottom-2 right-2 bg-white/80 text-black text-[10px] px-2 py-0.5 rounded">{img.colorName}</span>
-                      )}
-                      {img.isPrimary && (
-                        <span className="absolute bottom-2 left-2 bg-black text-white text-[10px] px-2 py-0.5 rounded">Primary</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
+
               </div>
             )}
           </div>

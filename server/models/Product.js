@@ -14,7 +14,8 @@ const productSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true
+    required: false,
+    default: ''
   },
   shortDescription: {
     type: String,
@@ -122,7 +123,32 @@ const productSchema = new mongoose.Schema({
     isOnSale: {
       type: Boolean,
       default: false
-    }
+    },
+    images: [{
+      url: {
+        type: String,
+        required: true
+      },
+      publicId: {
+        type: String,
+        required: false,
+        index: true
+      },
+      colorName: {
+        type: String,
+        required: false
+      },
+      assetType: {
+        type: String,
+        enum: ['image'],
+        default: 'image'
+      },
+      alt: String,
+      isPrimary: {
+        type: Boolean,
+        default: false
+      }
+    }]
   }],
   basePrice: {
     type: Number,
