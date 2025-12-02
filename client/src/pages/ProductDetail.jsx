@@ -28,8 +28,8 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
+  const [activeVariantIndex, setActiveVariantIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showZoom, setShowZoom] = useState(false);
@@ -51,8 +51,10 @@ const ProductDetail = () => {
         setProduct(data);
 
         if (data.variants && data.variants.length > 0) {
-          setSelectedColor(data.variants[0].color?.name || '');
-          setSelectedSize(data.variants[0].size || '');
+          const first = data.variants[0];
+          const firstSize = Array.isArray(first.sizes) && first.sizes.length ? first.sizes[0] : first.size;
+          setActiveVariantIndex(0);
+          setSelectedSize(firstSize || '');
         }
       } catch (e) {
         // Fallback to local catalog
@@ -76,6 +78,22 @@ const ProductDetail = () => {
     return () => { isMounted = false; };
   }, [slug]);
 
+  // When active variant changes, ensure selectedSize is valid for that variant
+  useEffect(() => {
+    if (!product) return;
+    const v = (product.variants || [])[activeVariantIndex];
+    if (!v) return;
+    const sizes = Array.from(new Set((Array.isArray(v.sizes) && v.sizes.length) ? v.sizes : (v.size ? [v.size] : []))).filter(Boolean);
+    if (sizes.length === 0) {
+      setSelectedSize('');
+      return;
+    }
+    if (!sizes.includes(selectedSize)) {
+      setSelectedSize(sizes[0]);
+      setCurrentImageIndex(0);
+    }
+  }, [activeVariantIndex, product]);
+
   // Helpers for dates (computed each render)
   const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   const now = Date.now();
@@ -85,14 +103,11 @@ const ProductDetail = () => {
   const currentSlug = product ? slugify(product.name || slug) : slug;
 
   const handleAddToCart = () => {
-    const productWithOptions = {
-      ...product,
-      selectedOptions: {
-        color: selectedColor,
-        size: selectedSize,
-      },
+    const variant = {
+      variantIndex: activeVariantIndex,
+      size: selectedSize
     };
-    addToCart(productWithOptions, quantity);
+    addToCart(product, quantity, variant);
   };
 
   const handleWishlistToggle = () => {
@@ -160,27 +175,23 @@ const ProductDetail = () => {
   // Compute prices & images only once product is available
   const curPrice = (product?.salePrice ?? product?.price ?? product?.basePrice) || 0;
   const origPrice = product?.salePrice ? (product?.price ?? product?.basePrice) : null;
-  // Filter images/videos for selected color/size variant
+   const variants = product.variants || [];
+   const activeVariant = variants[activeVariantIndex] || null;
+   const activeVariantStock = Number(activeVariant?.stock ?? 0);
+   const isVariantUnavailable = !activeVariant || activeVariantStock <= 0;
+  // Filter images/videos for selected variant (using variantIndex/variantId)
   let variantMedia = [];
   if (Array.isArray(product?.images)) {
+    const activeVariantId = activeVariant?.variantId;
+
     variantMedia = product.images.filter(img => {
-      // If both colorName and size are present, match both
-      if (img.colorName && img.size) {
-        return img.colorName === selectedColor && img.size === selectedSize;
-      }
-      // If only colorName, match color
-      if (img.colorName) {
-        return img.colorName === selectedColor;
-      }
-      // If only size, match size
-      if (img.size) {
-        return img.size === selectedSize;
-      }
-      // Otherwise, include as fallback
-      return true;
+      if (activeVariantId && img.variantId) return img.variantId === activeVariantId;
+      if (typeof img.variantIndex === 'number') return img.variantIndex === activeVariantIndex;
+      return false;
     });
-    // If no media for this variant, fallback to all images
+
     if (variantMedia.length === 0) {
+      // fallback to all images if nothing mapped yet
       variantMedia = product.images;
     }
   }
@@ -331,7 +342,6 @@ const ProductDetail = () => {
               <h1 className="text-3xl font-tenor font-bold text-gray-900 mb-2">
                 {product.name}
               </h1>
-                <p className="text-gray-600 mt-2 text-sm md:text-base">{(product.description || "").slice(0, 140)}{(product.description || "").length > 140 ? "…" : ""}</p>
               
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center">
@@ -354,102 +364,119 @@ const ProductDetail = () => {
             <div className="flex items-center gap-4">
               {origPrice ? (
                 <>
-                  <span className="text-3xl font-bold text-gray-900">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(curPrice)}</span>
+                  <span className="text-3xl font-tenor font-bold text-gray-900">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(curPrice)}</span>
                   <span className="text-xl text-gray-500 line-through">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(origPrice)}</span>
-                  <span className="text-sm bg-red-100 text-red-600 px-2 py-1 rounded">
-                    {Math.round(((origPrice - curPrice) / origPrice) * 100)}% Off
+                  <span className="text-sm bg-red-100 text-red-600 px-3 py-1 rounded-full font-medium">
+                    Save {Math.round(((origPrice - curPrice) / origPrice) * 100)}%
                   </span>
                 </>
               ) : (
-                <span className="text-3xl font-bold text-gray-900">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(curPrice)}</span>
+                <span className="text-3xl font-tenor font-bold text-gray-900">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(curPrice)}</span>
               )}
             </div>
 
-            {/* Description (moved under title; hide long block here) */}
-            <div className="hidden">
-              <p className="text-gray-600 leading-relaxed">
-                {product.description}
-              </p>
-            </div>
-
-            {/* Color Selection */}
+            {/* Variant Selection (driven by primary image) */}
             <div className="mb-6">
-              <h3 className="text-sm font-tenor text-gray-900 mb-3">Color</h3>
-              <div className="flex gap-4 flex-wrap items-end">
-                {Array.from(new Set((product.variants || []).map(v => v.color?.name))).map((colorName, idx) => {
-                  const colorHex = (product.variants || []).find(v => v.color?.name === colorName)?.color?.hex || '#ccc';
+              <h3 className="text-sm font-tenor text-gray-900 mb-3">More Options</h3>
+              <div className="flex gap-3 flex-wrap items-start">
+                {variants.map((v, idx) => {
+                  // try to find a primary image for this variant
+                  const primary = (product.images || []).find(img => {
+                    if (v.variantId && img.variantId === v.variantId) return true;
+                    if (typeof img.variantIndex === 'number' && img.variantIndex === idx) return true;
+                    return false;
+                  });
+                  const thumbUrl = primary ? resolve(primary.url) : (imageUrls[0] || (product.primaryImage ? resolve(product.primaryImage) : null));
+                  if (!thumbUrl) return null;
+                  const isActive = idx === activeVariantIndex;
+                  const isThisUnavailable = Number(v?.stock ?? 0) <= 0;
                   return (
-                    <div key={colorName || idx} className="flex flex-col items-center">
+                    <div key={v.variantId || idx} className="flex flex-col items-center gap-1">
                       <button
-                        onClick={() => setSelectedColor(colorName)}
-                        className={`w-10 h-10 rounded-full border-2 flex items-center justify-center mb-1 transition-colors ${selectedColor === colorName ? 'border-black' : 'border-gray-300'}`}
-                        style={{ backgroundColor: colorHex }}
-                        aria-label={colorName}
-                      />
-                      <span className="text-xs text-black mt-1">{colorName}</span>
+                        type="button"
+                        onClick={() => setActiveVariantIndex(idx)}
+                        className={`w-16 h-20 rounded-md overflow-hidden border-2 ${isActive ? 'border-black' : 'border-gray-200 hover:border-gray-300'} transition-colors`}
+                      >
+                        <LazyImage src={thumbUrl} alt={product.name} className="w-full h-full object-cover" />
+                      </button>
+                      <div className="h-4 flex items-center justify-center">
+                        {isThisUnavailable && (
+                          <span className="text-[11px] leading-none text-red-600 font-medium">Unavailable</span>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Size Selection */}
-            <div className="mb-6">
-              <h3 className="text-sm font-tenor text-gray-900 mb-3">Size</h3>
-              <div className="flex gap-2 flex-wrap">
-                {['XS','S','M','L','XL','XXL'].map(sz => {
-                  // Find if this size is available for the selected color
-                  const available = (product.variants || []).some(v => v.size === sz && v.color?.name === selectedColor);
-                  return (
-                    <button
-                      key={sz}
-                      onClick={() => available && setSelectedSize(sz)}
-                      disabled={!available}
-                      className={`px-4 py-2 rounded border text-sm font-medium transition-colors relative
-                        ${selectedSize === sz && available ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}
-                        ${!available ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      style={{ minWidth: 48 }}
-                    >
-                      {sz}
-                      {!available && (
-                        <span className="absolute left-0 top-1/2 w-full h-0.5 bg-red-500 rotate-[-20deg]" style={{ top: '50%' }}></span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            {/* Size & Quantity only when variant is available */}
+            {!isVariantUnavailable && (
+              <>
+                {/* Size Selection (per color, respects multi-size variants) */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-tenor text-gray-900 mb-3">Size</h3>
+                  <div className="flex gap-2 flex-wrap">
+                    {['XS','S','M','L','XL','XXL'].map(sz => {
+                      const v = (product.variants || [])[activeVariantIndex];
+                      const available = !!v && (
+                        (Array.isArray(v.sizes) && v.sizes.includes(sz)) ||
+                        v.size === sz
+                      );
+                      return (
+                        <button
+                          key={sz}
+                          onClick={() => available && setSelectedSize(sz)}
+                          disabled={!available}
+                          className={`px-4 py-2 rounded border text-sm font-medium transition-colors relative
+                            ${selectedSize === sz && available ? 'bg-black text-white border-black' : 'bg-white text-black border-black'}
+                            ${!available ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          style={{ minWidth: 48 }}
+                        >
+                          {sz}
+                          {!available && (
+                            <span className="absolute left-0 top-1/2 w-full h-0.5 bg-red-500 rotate-[-20deg]" style={{ top: '50%' }}></span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-            {/* Quantity */}
-            <div>
-              <h3 className="text-sm font-tenor text-gray-900 mb-3">Quantity</h3>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-8 h-8 border border-gray-300 rounded-lg flex items-center justify-center text-black hover:border-gray-400 transition-colors"
-                >
-                  -
-                </button>
-                <span className="w-12 text-center font-medium text-black">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-8 h-8 border border-gray-300 rounded-lg flex items-center justify-center text-black hover:border-gray-400 transition-colors"
-                >
-                  +
-                </button>
-              </div>
-            </div>
+                {/* Quantity */}
+                <div>
+                  <h3 className="text-sm font-tenor text-gray-900 mb-3">Quantity</h3>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="w-8 h-8 border border-gray-300 rounded-lg flex items-center justify-center text-black hover:border-gray-400 transition-colors"
+                    >
+                      -
+                    </button>
+                    <span className="w-12 text-center font-medium text-black">{quantity}</span>
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-8 h-8 border border-gray-300 rounded-lg flex items-center justify-center text-black hover:border-gray-400 transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Action Buttons */}
             <div className="flex gap-4">
-              <motion.button
-                onClick={handleAddToCart}
+              {!isVariantUnavailable && (
+                <motion.button
+                  onClick={handleAddToCart}
                   whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="btn-primary flex-1 text-lg py-4 rounded-[3px]"
-              >
-                Add to Cart
-              </motion.button>
+                  whileTap={{ scale: 0.98 }}
+                  className="btn-primary flex-1 text-lg py-4 rounded-[3px]"
+                >
+                  Add to Cart
+                </motion.button>
+              )}
               
               <motion.button
                 onClick={handleWishlistToggle}
@@ -499,6 +526,65 @@ const ProductDetail = () => {
                   <p className="text-sm text-gray-600">SSL encrypted</p>
                 </div>
               </div>
+            </div>
+
+            {/* Product Details Section - Enhanced */}
+            <div className="border-t border-gray-200 pt-6">
+              <details open className="group">
+                <summary className="flex items-center justify-between cursor-pointer list-none mb-4">
+                  <h3 className="text-base font-semibold text-gray-900 uppercase tracking-wide flex items-center gap-2">
+                    PRODUCT DETAILS
+                    <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </h3>
+                </summary>
+                
+                <div className="space-y-6">
+                  {/* Description */}
+                  {product.productDetails?.description && (
+                    <div className="text-gray-700 leading-relaxed">
+                      <p className="text-sm md:text-base whitespace-pre-line">
+                        {product.productDetails.description.replace(/\*/g, '×')}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Material & Care */}
+                  {product.productDetails?.materialAndCare && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-2">Material & Care</h4>
+                      <div className="text-gray-700 text-sm whitespace-pre-line">
+                        {product.productDetails.materialAndCare.replace(/\*/g, '×')}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Specifications */}
+                  {product.productDetails?.specifications && product.productDetails.specifications.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-3">Specifications</h4>
+                      <div className="grid grid-cols-2 gap-y-3 gap-x-6">
+                        {product.productDetails.specifications.map((spec, idx) => (
+                          <React.Fragment key={idx}>
+                            <div className="text-xs text-gray-500 uppercase tracking-wide">{spec.label.replace(/\*/g, '×')}</div>
+                            <div className="text-sm text-gray-900">{spec.value.replace(/\*/g, '×')}</div>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Fallback to legacy description if no productDetails */}
+                  {!product.productDetails?.description && product.description && (
+                    <div className="text-gray-700 leading-relaxed">
+                      <p className="text-sm md:text-base whitespace-pre-line">
+                        {product.description.replace(/\*/g, '×')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </details>
             </div>
           </div>
         </div>

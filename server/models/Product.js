@@ -17,9 +17,29 @@ const productSchema = new mongoose.Schema({
     required: false,
     default: ''
   },
+  productDetails: {
+    description: {
+      type: String,
+      default: ''
+    },
+    materialAndCare: {
+      type: String,
+      default: ''
+    },
+    specifications: [{
+      label: {
+        type: String,
+        required: true
+      },
+      value: {
+        type: String,
+        required: true
+      }
+    }]
+  },
   shortDescription: {
     type: String,
-    maxlength: 200
+    maxlength: 20
   },
   brand: {
     type: String,
@@ -58,6 +78,20 @@ const productSchema = new mongoose.Schema({
       type: String,
       required: false
     },
+    size: {
+      type: String,
+      required: false
+    },
+    variantIndex: {
+      type: Number,
+      required: false,
+      index: true
+    },
+    variantId: {
+      type: String,
+      required: false,
+      index: true
+    },
     assetType: {
       type: String,
       enum: ['image'],
@@ -91,14 +125,18 @@ const productSchema = new mongoose.Schema({
   variants: [{
     size: {
       type: String,
-      required: true,
+      required: false,
       enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'ONE_SIZE']
     },
+    sizes: [{
+      type: String,
+      enum: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'ONE_SIZE']
+    }],
+    // color fields are deprecated; variants are now differentiated
+    // visually by their primary image. Keeping this here for backward
+    // compatibility with existing documents but it is not used in UI.
     color: {
-      name: {
-        type: String,
-        required: true
-      },
+      name: String,
       hex: String
     },
     stock: {
@@ -108,8 +146,7 @@ const productSchema = new mongoose.Schema({
       default: 0
     },
     sku: {
-      type: String,
-      unique: true
+      type: String
     },
     price: {
       type: Number,
@@ -135,6 +172,18 @@ const productSchema = new mongoose.Schema({
         index: true
       },
       colorName: {
+        type: String,
+        required: false
+      },
+      size: {
+        type: String,
+        required: false
+      },
+      variantIndex: {
+        type: Number,
+        required: false
+      },
+      variantId: {
         type: String,
         required: false
       },
@@ -298,7 +347,7 @@ productSchema.index({ createdAt: -1 });
 // Virtual for primary image
 productSchema.virtual('primaryImage').get(function() {
   const primary = this.images.find(img => img.isPrimary);
-  return primary ? primary.url : (this.images[0] ? this.images[0].url : '');
+  return primary ? primary.url : (this.images[0] ? this.images[0].url : null);
 });
 
 // Virtual for lowest price

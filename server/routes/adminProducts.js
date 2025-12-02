@@ -2,6 +2,7 @@ const express = require('express');
 const auth = require('../middleware/auth');
 const requireAdmin = require('../middleware/admin');
 const Product = require('../models/Product');
+const mongoose = require('mongoose');
 const { initCloudinary, cloudinary } = require('../config/cloudinary');
 
 initCloudinary();
@@ -40,6 +41,10 @@ router.get('/:id', auth, requireAdmin, async (req, res) => {
 // Create product
 router.post('/', auth, requireAdmin, async (req, res) => {
   try {
+    // Ensure incoming variants have stable variantId values
+    if (req.body.variants && Array.isArray(req.body.variants)) {
+      req.body.variants = req.body.variants.map(v => ({ ...v, variantId: v.variantId || new mongoose.Types.ObjectId().toHexString() }));
+    }
     const product = new Product(req.body);
     await product.save();
     res.status(201).json(product);
@@ -52,8 +57,80 @@ router.post('/', auth, requireAdmin, async (req, res) => {
 // Update product
 router.put('/:id', auth, requireAdmin, async (req, res) => {
   try {
-    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updated) return res.status(404).json({ message: 'Product not found' });
+    // If slug is being updated, ensure uniqueness
+    if (req.body.slug) {
+      const existing = await Product.findOne({ slug: req.body.slug, _id: { $ne: req.params.id } });
+      if (existing) {
+        // Make slug unique by appending timestamp
+        req.body.slug = `${req.body.slug}-${Date.now()}`;
+      }
+    }
+    
+    // Update the product first
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+    
+    // If variants are being updated, ensure each variant has a stable variantId
+    // and sync image metadata. We no longer rely on color fields to map images;
+    // variants are visually differentiated by their primary image.
+    if (req.body.variants && Array.isArray(req.body.variants)) {
+      const incoming = req.body.variants;
+
+      // Build a quick lookup of existing variants by variantId so we only
+      // preserve ids for variants that actually still exist.
+      const existingById = new Map();
+      if (Array.isArray(product.variants)) {
+        for (const v of product.variants) {
+          if (v && v.variantId) {
+            existingById.set(v.variantId, v);
+          }
+        }
+      }
+
+      // Assign variantIds: keep the id when the client sends one that matches
+      // an existing variant; otherwise generate a **new** id so we never reuse
+      // ids from variants that have been deleted.
+      req.body.variants = incoming.map((variant) => {
+        if (variant.variantId && existingById.has(variant.variantId)) {
+          return variant; // keep stable id for true existing variant
+        }
+        return {
+          ...variant,
+          variantId: new mongoose.Types.ObjectId().toHexString(),
+        };
+      });
+
+      // Update image metadata to match current variants (prefer variantId).
+      // We intentionally **do not** remap images that already have a
+      // variantId pointing at a now-deleted variant; those should normally
+      // have been removed by the admin UI when the variant was deleted.
+      req.body.variants.forEach((variant, idx) => {
+        if (product.images && product.images.length > 0) {
+          product.images.forEach((img) => {
+            // If image already has explicit variantId, leave mapping as-is
+            // (cleanup is handled when variants are removed in the admin UI).
+            if (img.variantId) {
+              if (img.variantId === variant.variantId) {
+                img.size = img.size || variant.size;
+              }
+              return;
+            }
+
+            // If image has explicit variantIndex, and it still matches this
+            // position, align it to the new variantId for future stability.
+            if (typeof img.variantIndex === 'number' && img.variantIndex === idx) {
+              img.size = img.size || variant.size;
+              img.variantId = variant.variantId;
+            }
+          });
+        }
+      });
+    }
+    
+    // Apply all updates
+    Object.assign(product, req.body);
+    const updated = await product.save();
+    
     res.json(updated);
   } catch (err) {
     console.error('Update product error:', err);
@@ -105,6 +182,9 @@ router.post('/:id/images', auth, requireAdmin, async (req, res) => {
         alt: img.alt,
         isPrimary: !!img.isPrimary,
         colorName: img.colorName,
+        size: img.size,
+        variantIndex: typeof img.variantIndex === 'number' ? img.variantIndex : undefined,
+        variantId: img.variantId || undefined,
         assetType: 'image',
       });
     });

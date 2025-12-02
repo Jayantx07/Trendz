@@ -170,6 +170,9 @@ const Products = () => {
     const imageSrc = resolve(product.image || product.primaryImage || '');
     const curPrice = product.salePrice || product.price || product.basePrice;
     const origPrice = product.salePrice ? (product.price || product.basePrice) : null;
+    
+    // Skip products without images (not ready for display)
+    if (!imageSrc) return null;
     return (
     <motion.div
       key={product._id || product.slug || slug}
@@ -299,6 +302,11 @@ const Products = () => {
   const renderProductList = (product) => {
     const slug = product.slug || slugify(product.name || product._id || product.id);
     const go = () => navigate(`/products/${slug}`);
+    const imageSrc = resolve(product.image || product.primaryImage || '');
+    
+    // Skip products without images
+    if (!imageSrc) return null;
+    
     return (
     <motion.div
       key={product._id || slug}
@@ -309,7 +317,7 @@ const Products = () => {
       <div className="flex gap-6">
         <div className="w-32 h-32 flex-shrink-0">
           <LazyImage
-            src={resolve(product.image || product.primaryImage)}
+            src={imageSrc}
             alt={product.name}
             className="w-full h-full object-cover rounded-lg"
           />
