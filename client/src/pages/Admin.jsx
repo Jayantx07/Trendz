@@ -5,6 +5,7 @@ import LazyImage from '../components/common/LazyImage.jsx';
 
 const AdminInner = () => {
   const [products, setProducts] = useState([]);
+  const [productSearch, setProductSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [draft, setDraft] = useState(null);
@@ -109,6 +110,12 @@ const AdminInner = () => {
     }
   };
 
+  // Load products on initial mount so list is populated without manual refresh
+  useEffect(() => {
+    fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (!selectedProduct) { setDraft(null); return; }
     // Only initialise draft when it is empty or for a different product.
@@ -125,8 +132,8 @@ const AdminInner = () => {
             ? selectedProduct.productDetails.specifications.map(s => ({ label: s.label || '', value: s.value || '' }))
             : []
         },
-        category: selectedProduct.category || 'dresses',
-        gender: selectedProduct.gender || 'women',
+        category: selectedProduct.category || 'party-wear',
+        gender: 'women',
         basePrice: Number(selectedProduct.basePrice || 0),
         salePrice: Number(selectedProduct.salePrice || 0),
         isOnSale: !!selectedProduct.isOnSale,
@@ -344,7 +351,7 @@ const AdminInner = () => {
         description: 'Description goes here...',
         shortDescription: 'Short description...', // optional
         brand: 'Trendz',
-        category: 'dresses',
+        category: 'party-wear',
         gender: 'women',
         basePrice: 0,
         status: 'active',
@@ -426,7 +433,7 @@ const AdminInner = () => {
             : []
         },
         category: draft.category,
-        gender: draft.gender,
+        gender: 'women',
         basePrice: Number(draft.basePrice || 0),
         salePrice: Number(draft.salePrice || 0),
         isOnSale: !!draft.isOnSale,
@@ -743,18 +750,31 @@ const AdminInner = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-semibold text-black">Products</h2>
               <div className="flex items-center gap-3">
                 <button onClick={createProduct} className="text-sm text-black border border-gray-300 rounded px-2 py-1">Add</button>
                 <button onClick={fetchProducts} className="text-sm text-accent">Refresh</button>
               </div>
             </div>
+
+            <div className="mb-3">
+              <input
+                type="text"
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                placeholder="Search products by name..."
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black placeholder:text-gray-400"
+              />
+            </div>
+
             {loading ? (
-              <div>Loading…</div>
+              <div>Loading</div>
             ) : (
               <ul className="divide-y divide-gray-100">
-                {products.map((p) => (
+                {products
+                  .filter(p => !productSearch.trim() || p.name?.toLowerCase().includes(productSearch.trim().toLowerCase()))
+                  .map((p) => (
                   <li key={p._id} className={`py-3 cursor-pointer ${selectedProduct?._id===p._id? 'bg-gray-50' : ''}`} onClick={async ()=>{
                     try {
                       const res = await apiAuthFetch(`/admin/products/${p._id}`);
@@ -841,24 +861,19 @@ const AdminInner = () => {
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">Category</label>
                       <select value={draft.category} onChange={(e)=>updateDraft('category', e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black">
-                        <option value="dresses">dresses</option>
-                        <option value="tops">tops</option>
-                        <option value="bottoms">bottoms</option>
-                        <option value="outerwear">outerwear</option>
-                        <option value="accessories">accessories</option>
-                        <option value="shoes">shoes</option>
-                        <option value="bags">bags</option>
-                        <option value="jewelry">jewelry</option>
+                        <option value="kurti">Kurti</option>
+                        <option value="one-piece">One Piece</option>
+                        <option value="dungaree">Dungaree</option>
+                        <option value="gown">Gown</option>
+                        <option value="lehenga">Lehenga</option>
+                        <option value="co-ord-set">Co-ord Set</option>
+                        <option value="ethnic-dress">Ethnic Dress</option>
+                        <option value="western-dress">Western Dress</option>
+                        <option value="party-wear">Party Wear</option>
+                        <option value="casual-wear">Casual Wear</option>
                       </select>
                     </div>
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">Gender</label>
-                      <select value={draft.gender} onChange={(e)=>updateDraft('gender', e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black">
-                        <option value="women">women</option>
-                        <option value="men">men</option>
-                        <option value="unisex">unisex</option>
-                      </select>
-                    </div>
+                    {/* Gender field removed - site is women-only */}
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">Base Price</label>
                       <input type="number" value={draft.basePrice} onChange={(e)=>updateDraft('basePrice', e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black placeholder:text-gray-700" />

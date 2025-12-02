@@ -36,8 +36,13 @@ const ProductCard = ({ product }) => {
           />
         )}
       </div>
-      <div className="p-4">
-        <h4 className="text-gray-900 text-lg mb-3 cursor-pointer hover:text-accent" onClick={go}>{product.name}</h4>
+      <div className="p-4 flex flex-col h-full">
+        <h4
+          className="text-gray-900 text-base md:text-lg mb-3 cursor-pointer hover:text-accent line-clamp-2 min-h-[3.5rem]"
+          onClick={go}
+        >
+          {product.name}
+        </h4>
         <div className="flex items-center gap-2 mb-4">
           {product.originalPrice && (
             <span className="text-gray-400 line-through">
@@ -50,7 +55,7 @@ const ProductCard = ({ product }) => {
         </div>
         <button
           type="button"
-          className="w-full border border-gray-300 py-2 text-sm tracking-wide hover:bg-gray-50 transition-colors text-black"
+          className="mt-auto w-full border border-gray-300 py-2 text-sm tracking-wide hover:bg-gray-50 transition-colors text-black"
           onClick={go}
         >
           QUICK VIEW

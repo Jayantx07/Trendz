@@ -53,13 +53,18 @@ const Products = () => {
 
   const query = searchParams.get('q') || '';
 
-  // Map high-level categories (from navbar) to actual catalog categories
+  // Category mapping (kept for possible future use with navbar filters)
   const categoryAliases = {
-    Dresses: ['Gowns', 'One Piece', 'Outfits', 'Skirts'],
-    Tops: ['Toppers'],
-    Bottoms: ['Bottoms'],
-    Kurtas: ['Kurtas'],
-    Accessories: ['Accessories'],
+    'Kurti': ['kurti'],
+    'One Piece': ['one-piece'],
+    'Dungaree': ['dungaree'],
+    'Gown': ['gown'],
+    'Lehenga': ['lehenga'],
+    'Co-ord Set': ['co-ord-set'],
+    'Ethnic Dress': ['ethnic-dress'],
+    'Western Dress': ['western-dress'],
+    'Party Wear': ['party-wear'],
+    'Casual Wear': ['casual-wear'],
   };
   const resolveCategoryList = (val) => {
     if (!val) return null;
@@ -178,109 +183,56 @@ const Products = () => {
       key={product._id || product.slug || slug}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="product-card-wrapper group"
+      className="group"
     >
-      <div className="product-card">
-        <div className="product-image-container cursor-pointer" onClick={go}>
+      <div className="rounded-md overflow-hidden bg-white border border-gray-200 flex flex-col h-full">
+        <div className="relative aspect-[3/4] overflow-hidden cursor-pointer" onClick={go}>
           <LazyImage
             src={imageSrc}
             alt={product.name}
-            className="product-image"
+            className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
           />
 
           {/* Badges */}
           <div className="product-badges">
-            {product.isNew && (
-              <span className="badge-new">New</span>
-            )}
-            {(product.onSale || product.isOnSale) && (origPrice && curPrice) && (
-              <span className="badge-sale">
-                {Math.round(((origPrice - curPrice) / origPrice) * 100)}% Off
-              </span>
-            )}
-          </div>
-
-          {/* Quick Actions */}
-          <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleWishlistToggle(product)}
-              className="product-wishlist"
-            >
-              <Heart 
-                className={`w-4 h-4 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : ''}`} 
-              />
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleAddToCart(product)}
-              className="product-wishlist"
-            >
-              <ShoppingBag className="w-4 h-4 text-black" />
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={go}
-              className="product-wishlist"
-            >
-              <Eye className="w-4 h-4 text-black" />
-            </motion.button>
+            {product.isNew && <span className="badge-new">New</span>}
           </div>
         </div>
 
-        <div className="product-info">
-          <div className="mb-2">
-            <span className="text-xs text-gray-500 uppercase tracking-wide">
-              {product.category}
-            </span>
-          </div>
-          
-          <h3 className="product-title">
-            <button onClick={go} className="hover:text-accent transition-colors">
+        <div className="p-4 flex flex-col flex-1">
+          <h3 className="text-gray-900 text-base md:text-lg mb-3 cursor-pointer hover:text-accent line-clamp-2 min-h-[3.25rem]">
+            <button onClick={go} className="text-left w-full">
               {product.name}
             </button>
           </h3>
-          
+
           {/* Rating */}
           <div className="flex items-center gap-1 mb-2">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
                 className={`w-3 h-3 ${
-                  i < Math.floor(product.rating) 
-                    ? 'text-yellow-400 fill-current' 
+                  i < Math.floor(product.rating)
+                    ? 'text-yellow-400 fill-current'
                     : 'text-gray-300'
                 }`}
               />
             ))}
             <span className="text-xs text-gray-500">({product.reviewCount})</span>
           </div>
-          
-          <div className="product-price">
-            {product.salePrice || product.basePrice ? (
-              <>
-                <span className="product-current-price">
-                  {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(curPrice)}
-                </span>
-                {origPrice && (
-                  <span className="product-original-price">
-                    {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(origPrice)}
-                  </span>
-                )}
-              </>
-            ) : (
-              <span className="product-current-price">
-                {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(curPrice || 0)}
+
+          <div className="flex items-center gap-2 mb-4">
+            {origPrice && (
+              <span className="text-gray-400 line-through">
+                {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(origPrice)}
               </span>
             )}
+            <span className="text-gray-900 font-medium">
+              {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(curPrice || 0)}
+            </span>
           </div>
-          
-          <div className="mt-3 flex flex-wrap gap-1">
+
+          <div className="mt-3 mb-4 flex flex-wrap gap-1">
             {product.colors && product.colors.slice(0, 3).map((color, colorIndex) => (
               <span
                 key={colorIndex}
@@ -293,6 +245,14 @@ const Products = () => {
               <span className="text-xs text-gray-500">+{product.colors.length - 3}</span>
             )}
           </div>
+
+          <button
+            type="button"
+            onClick={() => handleAddToCart(product)}
+            className="mt-auto w-full border border-gray-900 py-2 text-sm tracking-wide text-black hover:bg-black hover:text-white transition-colors"
+          >
+            BUY NOW
+          </button>
         </div>
       </div>
     </motion.div>
@@ -490,14 +450,16 @@ const Products = () => {
                         className="appearance-none w-full border border-gray-300 rounded-lg px-3 pr-10 py-2 text-sm text-black focus:border-accent focus:outline-none"
                       >
                         <option value="">All Categories</option>
-                        <option value="Gowns">Gowns</option>
-                        <option value="Kurtas">Kurtas</option>
-                        <option value="Outfits">Outfits</option>
-                        <option value="One Piece">One Piece</option>
-                        <option value="Skirts">Skirts</option>
-                        <option value="Toppers">Toppers</option>
-                        <option value="Accessories">Accessories</option>
-                        <option value="Bottoms">Bottoms</option>
+                        <option value="kurti">Kurti</option>
+                        <option value="one-piece">One Piece</option>
+                        <option value="dungaree">Dungaree</option>
+                        <option value="gown">Gown</option>
+                        <option value="lehenga">Lehenga</option>
+                        <option value="co-ord-set">Co-ord Set</option>
+                        <option value="ethnic-dress">Ethnic Dress</option>
+                        <option value="western-dress">Western Dress</option>
+                        <option value="party-wear">Party Wear</option>
+                        <option value="casual-wear">Casual Wear</option>
                       </select>
                       <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
                     </div>

@@ -49,7 +49,18 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['dresses', 'tops', 'bottoms', 'outerwear', 'accessories', 'shoes', 'bags', 'jewelry']
+    enum: [
+      'kurti',
+      'one-piece',
+      'dungaree',
+      'gown',
+      'lehenga',
+      'co-ord-set',
+      'ethnic-dress',
+      'western-dress',
+      'party-wear',
+      'casual-wear'
+    ]
   },
   subcategory: {
     type: String,

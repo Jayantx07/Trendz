@@ -283,11 +283,6 @@ const ProductDetail = () => {
                 {product.isNew && (
                   <span className="badge-new">New</span>
                 )}
-                {(product.onSale || product.isOnSale) && (origPrice && curPrice) && (
-                  <span className="badge-sale">
-                    {Math.round(((origPrice - curPrice) / origPrice) * 100)}% Off
-                  </span>
-                )}
               </div>
             </div>
 

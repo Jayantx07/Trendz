@@ -5,24 +5,24 @@ import { useMedia } from '../../context/MediaMapContext.jsx';
 
 const items = [
   {
-    name: 'Dresses',
-    href: '/products?category=Dresses',
-    img: '/images/products/dresses.webp',
+    name: 'Western Wear',
+    href: '/products?category=western-dress',
+    img: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764709510/Western-wear_skuoka.png',
   },
   {
-    name: 'Kurtas',
-    href: '/products?category=Kurtas',
-    img: '/images/products/kurta.jpg',
+    name: 'Party Wear',
+    href: '/products?category=party-wear',
+    img: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764709225/Party-wear_nzxs8i.jpg',
   },
   {
-    name: 'Tops',
-    href: '/products?category=Tops',
-    img: '/images/products/dresses/toppers/Topper.jpg',
+    name: 'Co-Ord Sets',
+    href: '/products?category=co-ord-set',
+    img: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764709200/Co-ord_set_ihclt5.jpg',
   },
   {
-    name: 'Bottoms',
-    href: '/products?category=Bottoms',
-    img: '/images/products/dresses/bottom/bottom.webp',
+    name: 'Casual Wear',
+    href: '/products?category=casual-wear',
+    img: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764709510/Casual-wear_vgvvdn.png',
   },
 ];
 
