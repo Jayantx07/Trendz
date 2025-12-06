@@ -17,6 +17,7 @@ import {
 import { useCart } from '../context/CartContext.jsx';
 import { apiFetch } from '../utils/api.js';
 import { useWishlist } from '../context/WishlistContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import { getProductBySlug, localProducts, slugify } from '../utils/localProducts.js';
 import LazyImage from '../components/common/LazyImage.jsx';
 import { useMedia } from '../context/MediaMapContext.jsx';
@@ -25,6 +26,7 @@ const ProductDetail = () => {
   const { resolve } = useMedia();
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,6 +39,7 @@ const ProductDetail = () => {
 
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -102,20 +105,103 @@ const ProductDetail = () => {
   const fastDispatch = fmtDate(now + 2 * 24 * 60 * 60 * 1000);
   const currentSlug = product ? slugify(product.name || slug) : slug;
 
+  const requireAuth = (action) => {
+    if (!user) {
+      navigate('/login', { state: { from: `/products/${slug}` } });
+      return false;
+    }
+    if (typeof action === 'function') action();
+    return true;
+  };
+
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => setToast(null), 2200);
+  };
+
   const handleAddToCart = () => {
-    const variant = {
-      variantIndex: activeVariantIndex,
-      size: selectedSize
-    };
-    addToCart(product, quantity, variant);
+    if (!product) return;
+    requireAuth(() => {
+      const variants = product.variants || [];
+      const activeVariant = variants[activeVariantIndex] || null;
+
+      // Compute variant-specific images at the time of adding to cart
+      // Priority: 1) variant.images array, 2) product.images filtered by variantIndex, 3) product.images filtered by variantId
+      let variantMedia = [];
+      
+      // First, check if this specific variant has its own images array
+      if (activeVariant && Array.isArray(activeVariant.images) && activeVariant.images.length > 0) {
+        variantMedia = activeVariant.images;
+      }
+      // If not, filter product-level images by this variant
+      else if (Array.isArray(product?.images)) {
+        // Try to match by Mongoose _id first (most reliable)
+        const mongooseVariantId = activeVariant?._id ? String(activeVariant._id) : null;
+        
+        variantMedia = product.images.filter(img => {
+          // Match by Mongoose subdocument _id
+          if (mongooseVariantId && img.variantId && String(img.variantId) === mongooseVariantId) {
+            return true;
+          }
+          // Match by variantIndex
+          if (typeof img.variantIndex === 'number' && img.variantIndex === activeVariantIndex) {
+            return true;
+          }
+          return false;
+        });
+
+        // If no images matched, fall back to all product images
+        if (variantMedia.length === 0) {
+          variantMedia = product.images;
+        }
+      }
+
+      const computedImageUrls = Array.isArray(variantMedia)
+        ? variantMedia
+            .filter(im => !im.url || !im.url.match(/\.(mp4|webm|ogg)$/i))
+            .map((im) => (typeof im === 'string' ? im : im?.url))
+            .filter(Boolean)
+            .map((u) => resolve(u))
+        : (product?.primaryImage ? [resolve(product.primaryImage)] : []);
+
+      // Use the first image of this variant as the cart cover photo
+      const variantCoverImage = computedImageUrls[0] || null;
+
+      console.log('🛒 ADD TO CART DEBUG:', {
+        activeVariantIndex,
+        mongooseId: activeVariant?._id,
+        variantId: activeVariant?.variantId,
+        hasVariantImages: activeVariant?.images?.length || 0,
+        variantMediaCount: variantMedia.length,
+        computedImageUrlsCount: computedImageUrls.length,
+        variantCoverImage,
+        productImagesTotal: product?.images?.length || 0,
+      });
+
+      const variant = {
+        variantIndex: activeVariantIndex,
+        variantId: activeVariant?._id ? String(activeVariant._id) : undefined, // Use Mongoose subdocument _id as primary identifier
+        size: selectedSize,
+        imageUrl: variantCoverImage, // Use the first image of this variant as cover
+      };
+
+      addToCart(product, quantity, variant);
+      showToast('Added to your bag');
+    });
   };
 
   const handleWishlistToggle = () => {
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(product);
-    }
+    if (!product) return;
+    requireAuth(() => {
+      const pid = product._id || product.id;
+      if (isInWishlist(pid)) {
+        removeFromWishlist(pid);
+        showToast('Removed from wishlist');
+      } else {
+        addToWishlist(product);
+        showToast('Saved to wishlist');
+      }
+    });
   };
 
   const nextImage = () => {
@@ -212,6 +298,14 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {toast && (
+        <div className="fixed top-20 right-6 z-40">
+          <div className="bg-black text-white px-5 py-3 rounded-full shadow-lg text-sm font-medium tracking-wide flex items-center gap-2 animate-fade-in-up">
+            <span className="inline-block w-2 h-2 rounded-full bg-accent"></span>
+            <span>{toast}</span>
+          </div>
+        </div>
+      )}
       <div className="container pt-16 pb-8">
         {/* Breadcrumb */}
         <nav className="mb-8">

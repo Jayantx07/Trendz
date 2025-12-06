@@ -69,13 +69,13 @@ const Home = () => {
   return (
     <>
       <Helmet>
-        <title>Trendz - Luxury Fashion E-commerce | Discover Elegant Collections</title>
-        <meta name="description" content="Discover elegant collections, premium quality, and timeless style at Trendz. Luxury fashion inspired by Oscar de la Renta." />
-        <meta property="og:title" content="Trendz - Luxury Fashion E-commerce" />
-        <meta property="og:description" content="Discover elegant collections, premium quality, and timeless style at Trendz." />
+        <title>VASAAE - Luxury Fashion E-commerce | Discover Elegant Collections</title>
+        <meta name="description" content="Discover elegant collections, premium quality, and timeless style at VASAAE. Luxury fashion for the modern individual." />
+        <meta property="og:title" content="VASAAE - Luxury Fashion E-commerce" />
+        <meta property="og:description" content="Discover elegant collections, premium quality, and timeless style at VASAAE." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://trendz.com" />
-        <link rel="canonical" href="https://trendz.com" />
+        <meta property="og:url" content="https://vasaae.com" />
+        <link rel="canonical" href="https://vasaae.com" />
       </Helmet>
 
       <div className="min-h-screen">

@@ -61,7 +61,7 @@ function App() {
                 </AnimatePresence>
               </main>
               {!hideFooter && <Footer />}
-              <WhatsAppButton phone="919876543210" message="Hi, I need help with Trendz." />
+              <WhatsAppButton phone="919079005217" message="Hi, I need help with VASAAE." />
             </div>
             </SiteConfigProvider>
             </MediaMapProvider>

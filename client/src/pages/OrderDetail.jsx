@@ -267,7 +267,7 @@ const OrderDetail = () => {
                         {item.product?.name || 'Product'}
                       </h3>
                       <p className="text-sm text-gray-600 mb-2">
-                        {item.product?.brand || 'Trendz'}
+                        {item.product?.brand || 'VASAAE'}
                       </p>
                       {item.variant && (
                         <div className="text-sm text-gray-600 mb-2">

@@ -22,8 +22,8 @@ const SHOP_CATEGORIES = [
 
 const Navbar = () => {
   const { user } = useAuth();
-  const { cartItems } = useCart();
-  const { wishlistItems } = useWishlist();
+  const { cart, getCartCount } = useCart();
+  const { wishlistItems, getWishlistCount } = useWishlist();
   const location = useLocation();
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -62,8 +62,12 @@ const Navbar = () => {
     setShowNavbar(true);
   }, [location]);
 
-  const cartItemCount = (cartItems || []).reduce((total, item) => total + item.quantity, 0);
-  const wishlistCount = (wishlistItems || []).length;
+  const cartItemCount = typeof getCartCount === 'function'
+    ? getCartCount()
+    : (cart || []).reduce((total, item) => total + (item.quantity || 0), 0);
+  const wishlistCount = typeof getWishlistCount === 'function'
+    ? getWishlistCount()
+    : (wishlistItems || []).length;
 
   // Dynamic classes for color and background
   // Home ('/') keeps transparent-at-top behavior; all other routes use solid (black variant) at top
@@ -71,9 +75,8 @@ const Navbar = () => {
   const effectiveScrolled = onHome ? isScrolled : true;
   const navBg = effectiveScrolled ? 'bg-white shadow-sm' : 'bg-transparent';
   const linkColor = effectiveScrolled ? 'text-gray-900 hover:text-accent' : 'text-white hover:text-white/80';
-  const logoBlack = import.meta.env.VITE_LOGO_BLACK_URL || '/images/Logo black.png';
-  const logoWhite = import.meta.env.VITE_LOGO_WHITE_URL || '/images/Logo white.png';
-  const logoSrc = effectiveScrolled ? logoBlack : logoWhite;
+  // VASAAE logo (works on both light and dark backgrounds)
+  const logoSrc = 'https://res.cloudinary.com/dbx8ravps/image/upload/v1765021119/Screenshot_1-12-2025_204435_-removebg-preview_convm7.png';
 
   const submitSearch = (e) => {
     e && e.preventDefault();
@@ -100,7 +103,7 @@ const Navbar = () => {
               <Link to="/" className="flex items-center">
                 <img
                   src={logoSrc}
-                  alt="Trendz Logo"
+                  alt="VASAAE Logo"
                   className="h-8 w-auto object-contain"
                 />
               </Link>

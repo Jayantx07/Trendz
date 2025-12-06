@@ -2,9 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Instagram, 
-  Youtube, 
-  Twitter, 
-  Facebook, 
   Mail,
   Phone,
   MapPin
@@ -14,10 +11,7 @@ const Footer = () => {
   const footerLinks = {};
 
   const socialLinks = [
-    { name: 'Instagram', href: 'https://instagram.com/trendz', icon: Instagram },
-    { name: 'YouTube', href: 'https://youtube.com/trendz', icon: Youtube },
-    { name: 'Facebook', href: 'https://facebook.com/trendz', icon: Facebook },
-    { name: 'LinkedIn', href: 'https://linkedin.com/company/trendz', icon: Instagram }
+    { name: 'Instagram', href: 'https://www.instagram.com/vasaae.house?igsh=MXZxa2w4bHJuM3prYg==', icon: Instagram }
   ];
 
   return (
@@ -73,11 +67,11 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-accent" />
-                <span className="text-neutral-800">888.782.6357</span>
+                <span className="text-neutral-800">9079005217, +91 87696 17155</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-accent" />
-                <span className="text-neutral-800">customerservice@trendz.com</span>
+                <span className="text-neutral-800">founder@vasaae.com</span>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-accent mt-1" />
@@ -111,9 +105,9 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Large Trendz Logo at the very bottom */}
+        {/* Large VASAAE Logo at the very bottom */}
         <div className="w-full flex justify-center items-center mt-12 mb-4">
-          <img src="/images/Logo black.png" alt="Trendz Logo" className="h-20 md:h-24 object-contain" />
+          <img src="https://res.cloudinary.com/dbx8ravps/image/upload/v1765021119/Screenshot_1-12-2025_204435_-removebg-preview_convm7.png" alt="VASAAE Logo" className="h-20 md:h-24 object-contain" />
         </div>
       </div>
     </footer>

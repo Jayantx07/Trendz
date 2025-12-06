@@ -44,7 +44,7 @@ const productSchema = new mongoose.Schema({
   brand: {
     type: String,
     required: true,
-    default: 'Trendz'
+    default: 'VASAAE'
   },
   category: {
     type: String,

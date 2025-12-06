@@ -45,7 +45,7 @@ const CartProvider = ({ children }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `bearer ${token}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ items })
       });
@@ -59,10 +59,18 @@ const CartProvider = ({ children }) => {
     }
   };
 
-  // Helper: remove item
-  const removeFromCart = async (productId) => {
+  // Helper: remove a specific cart item (by product + variant)
+  const removeFromCart = async (productId, variant = {}) => {
+    const { size, color } = variant || {};
+
     if (!token) {
-      const updated = cart.filter(item => item.product !== productId);
+      const updated = cart.filter(item => {
+        const sameProduct = item.product === productId || item.product?._id === productId;
+        const sameSize = size ? item.variant?.size === size : true;
+        const sameColor = color?.name ? item.variant?.color?.name === color.name : true;
+        // keep item when it does NOT match all provided keys
+        return !(sameProduct && sameSize && sameColor);
+      });
       setCart(updated);
       localStorage.setItem('cart', JSON.stringify(updated));
       return;
@@ -72,7 +80,11 @@ const CartProvider = ({ children }) => {
     try {
       const res = await apiFetch(`/cart/item/${productId}`, {
         method: 'DELETE',
-        headers: { Authorization: `bearer ${token}` }
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ variant: { size, color } })
       });
       if (!res.ok) throw new Error('Failed to remove item');
       const data = await res.json();
@@ -96,7 +108,7 @@ const CartProvider = ({ children }) => {
     try {
       const res = await apiFetch('/cart/clear', {
         method: 'POST',
-        headers: { Authorization: `bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to clear cart');
       setCart([]);
@@ -107,21 +119,73 @@ const CartProvider = ({ children }) => {
     }
   };
 
-  // Add/update item in cart
+  // Add/update item in cart, keyed by product + variantId + size
   const addToCart = (product, quantity = 1, variant = {}) => {
+    // Require authentication for server-backed cart
+    if (!token) return;
     let updated;
-    const idx = cart.findIndex(
-      item => item.product === product._id && item.variant?.size === variant.size && item.variant?.color?.name === variant.color?.name
-    );
+
+    // Only merge into an existing line item when we have a stable
+    // variantId from the backend. If variantId is missing (e.g. local
+    // products or incomplete data), always create a new cart line so
+    // different variants never overwrite each other's image/details.
+    let idx = -1;
+    if (variant.variantId) {
+      idx = cart.findIndex((item) => {
+        const sameProduct = item.product === product._id;
+        const sameVariantId = item.variant?.variantId === variant.variantId;
+        const sameSize = item.variant?.size === variant.size;
+
+        return sameProduct && sameVariantId && sameSize;
+      });
+    }
+    // Use the imageUrl provided by ProductDetail (which captured the exact displayed variant image)
+    // Fall back to computing from product images only if not provided
+    let variantImageUrl = variant.imageUrl || '';
+
+  console.log('🛒 CART CONTEXT - variant.imageUrl received:', variant.imageUrl);
+
+    if (!variantImageUrl) {
+      const resolvedVariantIndex =
+        typeof variant.variantIndex === 'number'
+          ? variant.variantIndex
+          : (Array.isArray(product.variants) ? 0 : null);
+
+      const variantImages =
+        Array.isArray(product.images) && resolvedVariantIndex !== null
+          ? product.images.filter((img) => {
+              if (variant.variantId && img.variantId) {
+                return img.variantId === variant.variantId;
+              }
+              if (typeof img.variantIndex === 'number') {
+                return img.variantIndex === resolvedVariantIndex;
+              }
+              return false;
+            })
+          : product.images || [];
+
+      variantImageUrl = Array.isArray(variantImages) && variantImages.length
+        ? (variantImages.find((im) => im.isPrimary)?.url || variantImages[0]?.url || '')
+        : (product.primaryImage || '');
+    }
+
     if (idx > -1) {
       updated = [...cart];
       updated[idx].quantity += quantity;
+      updated[idx].variant = {
+        ...updated[idx].variant,
+        ...variant,
+        imageUrl: variantImageUrl,
+      };
     } else {
       updated = [
         ...cart,
         {
           product: product._id,
-          variant,
+          variant: {
+            ...variant,
+            imageUrl: variantImageUrl,
+          },
           quantity,
           price: product.basePrice,
           salePrice: product.salePrice
@@ -131,22 +195,35 @@ const CartProvider = ({ children }) => {
     saveCart(updated);
   };
 
-  // Update quantity
-  const updateQuantity = (productId, newQuantity) => {
-    let updated = cart.map(item =>
-      item.product === productId ? { ...item, quantity: newQuantity } : item
-    );
+  // Update quantity for a specific cart item (by product + variant)
+  const updateQuantity = (productId, newQuantity, variant = {}) => {
+    const id = typeof productId === 'object' && productId !== null
+      ? productId._id
+      : productId;
+
+    const { size, color } = variant || {};
+
+    const updated = cart.map((item) => {
+      const sameProduct = item.product === id || item.product?._id === id;
+      const sameSize = size ? item.variant?.size === size : true;
+      const sameColor = color?.name ? item.variant?.color?.name === color.name : true;
+
+      if (sameProduct && sameSize && sameColor) {
+        return { ...item, quantity: newQuantity };
+      }
+
+      return item;
+    });
+
     saveCart(updated);
   };
 
-  // On login, fetch cart from backend. On logout, clear cart.
+  // On login, fetch cart from backend. On logout, clear in-memory cart.
   useEffect(() => {
     if (token) {
       fetchCart();
     } else {
-      // Guest: load from localStorage
-      const local = localStorage.getItem('cart');
-      setCart(local ? JSON.parse(local) : []);
+      setCart([]);
     }
     // eslint-disable-next-line
   }, [token]);

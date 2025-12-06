@@ -196,7 +196,7 @@ const Checkout = () => {
               </div>
             )}
             <p className="text-gray-600 mb-8">
-              Thank you for shopping with Trendz! You will receive a confirmation email shortly with your order details and tracking information.
+              Thank you for shopping with VASAAE! You will receive a confirmation email shortly with your order details and tracking information.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <motion.button

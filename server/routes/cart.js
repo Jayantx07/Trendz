@@ -30,22 +30,38 @@ router.post('/', auth, async (req, res) => {
       cart.updatedAt = Date.now();
     }
     await cart.save();
-    res.json(cart);
+
+    // Always return cart with populated product details so frontend
+    // can reliably render names/images even after quantity updates.
+    const populatedCart = await Cart.findById(cart._id).populate('items.product');
+    res.json(populatedCart);
   } catch (err) {
     res.status(500).json({ message: 'Error saving cart' });
   }
 });
 
-// Remove an item from cart
+// Remove a specific item (product + optional variant) from cart
 router.delete('/item/:productId', auth, async (req, res) => {
   try {
     const { productId } = req.params;
+    const { variant } = req.body || {};
+    const size = variant?.size;
+    const colorName = variant?.color?.name;
+
     let cart = await Cart.findOne({ user: req.user.userId });
     if (!cart) return res.status(404).json({ message: 'Cart not found' });
-    cart.items = cart.items.filter(item => item.product.toString() !== productId);
+
+    cart.items = cart.items.filter((item) => {
+      const sameProduct = item.product.toString() === productId;
+      const sameSize = size ? item.variant?.size === size : true;
+      const sameColor = colorName ? item.variant?.color?.name === colorName : true;
+      // keep item when it does NOT match all provided keys
+      return !(sameProduct && sameSize && sameColor);
+    });
     cart.updatedAt = Date.now();
     await cart.save();
-    res.json(cart);
+    const populatedCart = await Cart.findById(cart._id).populate('items.product');
+    res.json(populatedCart);
   } catch (err) {
     res.status(500).json({ message: 'Error removing item' });
   }
@@ -59,7 +75,8 @@ router.post('/clear', auth, async (req, res) => {
     cart.items = [];
     cart.updatedAt = Date.now();
     await cart.save();
-    res.json(cart);
+    const populatedCart = await Cart.findById(cart._id).populate('items.product');
+    res.json(populatedCart);
   } catch (err) {
     res.status(500).json({ message: 'Error clearing cart' });
   }

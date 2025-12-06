@@ -5,11 +5,11 @@ const Contact = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
 
-  const adminEmail = 'customerservice@trendz.com';
+  const adminEmail = 'founder@vasaae.com';
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const subject = `Inquiry from ${name || 'Trendz visitor'}`;
+    const subject = `Inquiry from ${name || 'VASAAE visitor'}`;
     const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
     window.location.href = `mailto:${adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
@@ -25,11 +25,11 @@ const Contact = () => {
         {/* Contact details */}
         <div className="space-y-3">
           <p className="text-gray-700"><strong>Email:</strong> <a className="underline" href={`mailto:${adminEmail}`}>{adminEmail}</a></p>
-          <p className="text-gray-700"><strong>Phone:</strong> +91 90000 00000</p>
+          <p className="text-gray-700"><strong>Phone:</strong> 9079005217, +91 87696 17155</p>
           <p className="text-gray-700"><strong>Address:</strong> Sitapura Jaipur High Street, Rajasthan, India</p>
           <div className="rounded-lg overflow-hidden border border-gray-200 mt-4">
             <iframe
-              title="Trendz Location"
+              title="VASAAE Location"
               src="https://www.google.com/maps?q=Sitapura%20Jaipur%20High%20Street,%20Rajasthan,%20India&output=embed"
               className="w-full h-64"
               loading="lazy"

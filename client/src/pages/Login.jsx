@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -10,6 +10,7 @@ const Login = () => {
   const [formError, setFormError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,7 +24,10 @@ const Login = () => {
       return;
     }
     const success = await login(form.email, form.password);
-    if (success) navigate('/account');
+    if (success) {
+      const from = location.state && location.state.from;
+      navigate(from || '/account', { replace: true });
+    }
   };
 
   return (

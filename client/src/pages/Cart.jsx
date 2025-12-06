@@ -1,15 +1,23 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import { motion } from 'framer-motion';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 
 const Cart = () => {
-  const { cart, loading, error, addToCart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { cart, loading, error, removeFromCart, updateQuantity, clearCart, getCartCount } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const subtotal = cart.reduce((sum, item) => {
     const price = item.salePrice || item.price;
     return sum + price * item.quantity;
   }, 0);
+
+  const totalItems = typeof getCartCount === 'function'
+    ? getCartCount()
+    : cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
 
   if (loading) {
     return (
@@ -33,6 +41,32 @@ const Cart = () => {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-24 h-24 bg-gray-900 text-white rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShoppingBag className="w-12 h-12" />
+          </div>
+          <h2 className="text-2xl font-tenor font-bold text-black mb-4">
+            Sign in to view your bag
+          </h2>
+          <p className="text-gray-600 mb-8">
+            Your curated pieces wait for you. Login to continue your VASAAE journey.
+          </p>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/login', { state: { from: '/cart' } })}
+            className="btn-primary rounded-[3px]"
+          >
+            Login to Continue
+          </motion.button>
+        </div>
+      </div>
+    );
+  }
+
   if (!cart || cart.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -47,7 +81,7 @@ const Cart = () => {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => window.history.back()}
+            onClick={() => navigate('/products')}
             className="btn-primary rounded-[3px]"
           >
             Continue Shopping
@@ -61,7 +95,7 @@ const Cart = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container py-8">
         <h1 className="text-3xl font-tenor font-bold text-gray-900 mb-8">
-          Shopping Cart ({cart.length} items)
+          Shopping Cart ({totalItems} items)
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -78,11 +112,21 @@ const Cart = () => {
                 <div className="flex gap-4">
                   {/* Product Image */}
                   <div className="w-24 h-32 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                    <img
-                      src={item.product?.images?.[0]?.url || '/images/placeholder.jpg'}
-                      alt={item.product?.name || 'Product'}
-                      className="w-full h-full object-cover"
-                    />
+                    {(() => {
+                      const product = item.product || {};
+                      const variantImage = item.variant?.imageUrl;
+                      const image = variantImage
+                        || product.primaryImage
+                        || (Array.isArray(product.images) && (product.images[0]?.url || product.images[0]))
+                        || '/images/placeholder.jpg';
+                      return (
+                        <img
+                          src={image}
+                          alt={product.name || 'Product'}
+                          className="w-full h-full object-cover"
+                        />
+                      );
+                    })()}
                   </div>
 
                   {/* Product Details */}
@@ -109,27 +153,52 @@ const Cart = () => {
                       <div className="flex items-center gap-4">
                         {/* Quantity Controls */}
                         <div className="flex items-center border border-gray-300 rounded-lg">
-                          <button
-                            onClick={() => updateQuantity(item.product, Math.max(1, item.quantity - 1))}
-                            className="px-3 py-1 hover:bg-gray-50 transition-colors"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className="px-4 py-1 font-medium">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(item.product, item.quantity + 1)}
-                            className="px-3 py-1 hover:bg-gray-50 transition-colors"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
+                          {(() => {
+                            const productId = item.product?._id || item.product;
+                            const variant = item.variant || {};
+                            return (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    updateQuantity(
+                                      productId,
+                                      Math.max(1, item.quantity - 1),
+                                      variant
+                                    )
+                                  }
+                                  className="px-3 py-1 hover:bg-gray-50 transition-colors"
+                                >
+                                  <Minus className="w-4 h-4 text-black" />
+                                </button>
+                                <span className="px-4 py-1 font-medium text-black">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  onClick={() =>
+                                    updateQuantity(
+                                      productId,
+                                      item.quantity + 1,
+                                      variant
+                                    )
+                                  }
+                                  className="px-3 py-1 hover:bg-gray-50 transition-colors"
+                                >
+                                  <Plus className="w-4 h-4 text-black" />
+                                </button>
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
 
                       {/* Remove Button */}
                       <button
-                        onClick={() => removeFromCart(item.product)}
+                        onClick={() =>
+                          removeFromCart(
+                            item.product?._id || item.product,
+                            item.variant || {}
+                          )
+                        }
                         className="text-red-600 hover:text-red-700 transition-colors"
                       >
                         <Trash2 className="w-5 h-5" />

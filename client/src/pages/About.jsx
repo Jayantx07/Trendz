@@ -6,9 +6,9 @@ const About = () => {
     <div className="container pt-24 md:pt-28 pb-16">
       {/* Intro */}
       <header className="mb-10">
-        <h1 className="text-4xl md:text-5xl font-tenor text-gray-900 mb-3">About Trendz</h1>
+        <h1 className="text-4xl md:text-5xl font-tenor text-gray-900 mb-3">About VASAAE</h1>
         <p className="text-gray-600 max-w-3xl">
-          Inspired by timeless silhouettes and modern craftsmanship, Trendz creates elegant pieces designed
+          Inspired by timeless silhouettes and modern craftsmanship, VASAAE creates elegant pieces designed
           to be worn and loved beyond seasons.
         </p>
       </header>
@@ -28,9 +28,9 @@ const About = () => {
         </div>
         <div className="rounded-lg overflow-hidden border border-gray-200 h-64 md:h-72">
           <img
-            src="/images/products/dresses/full outfits/black outfit.jpg"
-            alt="Trendz atelier"
-            className="w-full h-full object-cover"
+            src="https://res.cloudinary.com/dbx8ravps/image/upload/v1765021119/Screenshot_1-12-2025_204435_-removebg-preview_convm7.png"
+            alt="VASAAE brand"
+            className="w-full h-full object-contain bg-white p-8"
           />
         </div>
       </section>

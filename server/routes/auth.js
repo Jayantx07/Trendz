@@ -311,13 +311,27 @@ router.delete('/wishlist/:productId', auth, async (req, res) => {
 router.get('/wishlist', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId)
-      .populate('wishlist', 'name primaryImage basePrice salePrice isOnSale category');
+      .populate('wishlist', 'name images basePrice salePrice isOnSale category');
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json(user.wishlist);
+    // Ensure each product has a primaryImage field derived from its images array
+    const enrichedWishlist = user.wishlist.map((product) => {
+      const doc = product.toObject({ getters: true, virtuals: false });
+
+      const primaryImage = Array.isArray(doc.images) && doc.images.length > 0
+        ? (doc.images.find((img) => img.isPrimary)?.url || doc.images[0].url)
+        : '';
+
+      return {
+        ...doc,
+        primaryImage,
+      };
+    });
+
+    res.json(enrichedWishlist);
   } catch (error) {
     console.error('Get wishlist error:', error);
     res.status(500).json({ message: 'Server error getting wishlist' });

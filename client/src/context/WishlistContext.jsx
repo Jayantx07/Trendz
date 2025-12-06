@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext.jsx';
+import { apiAuthFetch } from '../utils/api.js';
 
 const WishlistContext = createContext();
 
@@ -11,51 +13,61 @@ export const useWishlist = () => {
 };
 
 export const WishlistProvider = ({ children }) => {
+  const { token } = useAuth();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Load wishlist from localStorage on mount
+  // Clear wishlist when fully logged out
   useEffect(() => {
-    const savedWishlist = localStorage.getItem('wishlist');
-    if (savedWishlist) {
-      try {
-        setWishlistItems(JSON.parse(savedWishlist));
-      } catch (error) {
-        console.error('Error loading wishlist from localStorage:', error);
-      }
+    if (!token && !localStorage.getItem('token')) {
+      setWishlistItems([]);
     }
-  }, []);
+  }, [token]);
 
-  // Save wishlist to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('wishlist', JSON.stringify(wishlistItems));
-  }, [wishlistItems]);
-
-  const addToWishlist = (product) => {
+  const addToWishlist = async (product) => {
+    const id = product._id || product.id;
     setWishlistItems(prevItems => {
-      const existingItem = prevItems.find(item => item.productId === product._id);
-      if (existingItem) {
-        return prevItems; // Already in wishlist
-      }
-      
+      if (prevItems.some(item => item.productId === id)) return prevItems;
+      const image = product.primaryImage
+        || product.image
+        || (Array.isArray(product.images) && (product.images[0]?.url || product.images[0]))
+        || '';
       const newItem = {
-        productId: product._id,
+        productId: id,
         name: product.name,
-        price: product.price,
+        price: product.price || product.basePrice,
         salePrice: product.salePrice,
-        image: product.images[0],
+        image,
         category: product.category,
         brand: product.brand,
         addedAt: new Date().toISOString(),
       };
       return [...prevItems, newItem];
     });
+
+    const authToken = token || localStorage.getItem('token');
+    if (authToken) {
+      try {
+        await apiAuthFetch(`/auth/wishlist/${id}`, { method: 'POST' });
+      } catch (error) {
+        console.error('Error adding to wishlist on server:', error);
+      }
+    }
   };
 
-  const removeFromWishlist = (productId) => {
+  const removeFromWishlist = async (productId) => {
     setWishlistItems(prevItems => 
       prevItems.filter(item => item.productId !== productId)
     );
+
+    const authToken = token || localStorage.getItem('token');
+    if (authToken) {
+      try {
+        await apiAuthFetch(`/auth/wishlist/${productId}`, { method: 'DELETE' });
+      } catch (error) {
+        console.error('Error removing from wishlist on server:', error);
+      }
+    }
   };
 
   const clearWishlist = () => {
@@ -71,21 +83,32 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const syncWithServer = async () => {
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
+    const authToken = token || localStorage.getItem('token');
+    if (!authToken) return;
 
     setLoading(true);
     try {
-      // Get wishlist from server
-      const response = await fetch('/api/wishlist', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const serverWishlist = await response.json();
-        setWishlistItems(serverWishlist);
+      const res = await apiAuthFetch('/auth/wishlist');
+      if (res.ok) {
+        const serverWishlist = await res.json();
+        const mapped = (Array.isArray(serverWishlist) ? serverWishlist : []).map(p => {
+          const id = p._id || p.id;
+          const image = p.primaryImage
+            || p.image
+            || (Array.isArray(p.images) && (p.images[0]?.url || p.images[0]))
+            || '';
+          return {
+            productId: id,
+            name: p.name,
+            price: p.basePrice || p.price,
+            salePrice: p.salePrice,
+            image,
+            category: p.category,
+            brand: p.brand,
+            addedAt: new Date().toISOString(),
+          };
+        });
+        setWishlistItems(mapped);
       }
     } catch (error) {
       console.error('Error syncing wishlist with server:', error);
@@ -94,39 +117,15 @@ export const WishlistProvider = ({ children }) => {
     }
   };
 
-  const saveToServer = async () => {
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-
-    try {
-      await fetch('/api/wishlist', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(wishlistItems),
-      });
-    } catch (error) {
-      console.error('Error saving wishlist to server:', error);
-    }
-  };
-
-  // Sync with server when user logs in
+  // Sync with server when user logs in or on first mount with a stored token
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
+    const authToken = token || localStorage.getItem('token');
+    if (authToken) {
       syncWithServer();
+    } else {
+      setWishlistItems([]);
     }
-  }, []);
-
-  // Save to server when wishlist changes (if user is logged in)
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (token && wishlistItems.length > 0) {
-      saveToServer();
-    }
-  }, [wishlistItems]);
+  }, [token]);
 
   const value = {
     wishlistItems,

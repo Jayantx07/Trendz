@@ -350,7 +350,7 @@ const AdminInner = () => {
         slug: `${slugify(`new-product-${ts}`)}`,
         description: 'Description goes here...',
         shortDescription: 'Short description...', // optional
-        brand: 'Trendz',
+        brand: 'VASAAE',
         category: 'party-wear',
         gender: 'women',
         basePrice: 0,
