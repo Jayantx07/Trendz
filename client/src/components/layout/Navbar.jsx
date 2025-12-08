@@ -21,7 +21,7 @@ const SHOP_CATEGORIES = [
 ];
 
 const Navbar = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { cart, getCartCount } = useCart();
   const { wishlistItems, getWishlistCount } = useWishlist();
   const location = useLocation();
@@ -34,6 +34,8 @@ const Navbar = () => {
   const [searchInput, setSearchInput] = useState('');
   const [shopOpen, setShopOpen] = useState(false);
   const shopCloseTimer = useRef(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileCloseTimer = useRef(null);
 
   useEffect(() => {
     let ticking = false;
@@ -230,24 +232,82 @@ const Navbar = () => {
                 </Link>
               )}
 
-              {/* Profile (moved to cart's old position) shows avatar/photo */}
-              <Link
-                to={user ? "/account" : "/login"}
-                className={`p-2 transition-colors ${linkColor}`}
-                aria-label={user ? 'Account' : 'Sign in'}
+              {/* Profile Dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={() => {
+                  if (profileCloseTimer.current) {
+                    clearTimeout(profileCloseTimer.current);
+                    profileCloseTimer.current = null;
+                  }
+                  setProfileOpen(true);
+                }}
+                onMouseLeave={() => {
+                  if (profileCloseTimer.current) clearTimeout(profileCloseTimer.current);
+                  profileCloseTimer.current = setTimeout(() => setProfileOpen(false), 150);
+                }}
               >
-                {user ? (
-                  user.avatar ? (
-                    <img src={user.avatar} alt="Profile" className="w-7 h-7 rounded-full object-cover border border-gray-200" />
+                <Link
+                  to={user ? "/account" : "/login"}
+                  className={`p-2 transition-colors ${linkColor} flex items-center`}
+                  aria-label={user ? 'Account' : 'Sign in'}
+                >
+                  {user ? (
+                    user.avatar ? (
+                      <img src={user.avatar} alt="Profile" className="w-7 h-7 rounded-full object-cover border border-gray-200" />
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs font-medium">
+                        {(user.firstName?.[0] || '').toUpperCase()}{(user.lastName?.[0] || '').toUpperCase()}
+                      </div>
+                    )
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs font-medium">
-                      {(user.firstName?.[0] || '').toUpperCase()}{(user.lastName?.[0] || '').toUpperCase()}
-                    </div>
-                  )
-                ) : (
-                  <User className="w-5 h-5" />
-                )}
-              </Link>
+                    <User className="w-5 h-5" />
+                  )}
+                </Link>
+
+                {/* Dropdown Content - Only if user is logged in */}
+                <AnimatePresence>
+                  {user && profileOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      className="absolute right-0 top-full w-40 mt-2"
+                      onMouseEnter={() => {
+                        if (profileCloseTimer.current) {
+                          clearTimeout(profileCloseTimer.current);
+                          profileCloseTimer.current = null;
+                        }
+                        setProfileOpen(true);
+                      }}
+                      onMouseLeave={() => {
+                        if (profileCloseTimer.current) clearTimeout(profileCloseTimer.current);
+                        profileCloseTimer.current = setTimeout(() => setProfileOpen(false), 150);
+                      }}
+                    >
+                      <div className="bg-white shadow-lg border border-gray-200 rounded-md p-2 flex flex-col gap-1">
+                        <Link
+                          to="/account"
+                          className="px-3 py-2 text-xs font-tenor tracking-wider text-gray-800 hover:text-accent hover:bg-gray-50 rounded text-left"
+                        >
+                          ACCOUNT
+                        </Link>
+                        <button
+                          onClick={() => {
+                            logout();
+                            navigate('/');
+                            setProfileOpen(false);
+                          }}
+                          className="px-3 py-2 text-xs font-tenor tracking-wider text-gray-800 hover:text-red-600 hover:bg-gray-50 rounded text-left w-full"
+                        >
+                          LOGOUT
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
             {/* Mobile Menu Button */}
@@ -385,6 +445,18 @@ const Navbar = () => {
                     {user ? 'ACCOUNT' : 'SIGN IN'}
                   </span>
                 </Link>
+                {user && (
+                  <button
+                    onClick={() => {
+                      logout();
+                      navigate('/');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-3 py-2 text-sm font-tenor tracking-wide text-red-600 hover:text-red-700 transition-colors"
+                  >
+                    LOGOUT
+                  </button>
+                )}
               </div>
             </div>
           )}
