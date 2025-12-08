@@ -157,7 +157,8 @@ const Products = () => {
   };
 
   const handleAddToCart = (product) => {
-    addToCart(product, 1);
+    const slug = product.slug || (product._id ? product._id : slugify(product.name || product.id));
+    navigate(`/products/${slug}`);
   };
 
   const handleWishlistToggle = (product) => {

@@ -121,8 +121,7 @@ const CartProvider = ({ children }) => {
 
   // Add/update item in cart, keyed by product + variantId + size
   const addToCart = (product, quantity = 1, variant = {}) => {
-    // Require authentication for server-backed cart
-    if (!token) return;
+    // Allow guest cart (no token check here)
     let updated;
 
     // Only merge into an existing line item when we have a stable
@@ -218,12 +217,22 @@ const CartProvider = ({ children }) => {
     saveCart(updated);
   };
 
-  // On login, fetch cart from backend. On logout, clear in-memory cart.
+  // On login, fetch cart from backend. On logout, load from local storage.
   useEffect(() => {
     if (token) {
       fetchCart();
     } else {
-      setCart([]);
+      const localCart = localStorage.getItem('cart');
+      if (localCart) {
+        try {
+          setCart(JSON.parse(localCart));
+        } catch (e) {
+          console.error('Failed to parse cart from local storage', e);
+          setCart([]);
+        }
+      } else {
+        setCart([]);
+      }
     }
     // eslint-disable-next-line
   }, [token]);

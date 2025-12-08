@@ -121,73 +121,72 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (!product) return;
-    requireAuth(() => {
-      const variants = product.variants || [];
-      const activeVariant = variants[activeVariantIndex] || null;
+    
+    const variants = product.variants || [];
+    const activeVariant = variants[activeVariantIndex] || null;
 
-      // Compute variant-specific images at the time of adding to cart
-      // Priority: 1) variant.images array, 2) product.images filtered by variantIndex, 3) product.images filtered by variantId
-      let variantMedia = [];
+    // Compute variant-specific images at the time of adding to cart
+    // Priority: 1) variant.images array, 2) product.images filtered by variantIndex, 3) product.images filtered by variantId
+    let variantMedia = [];
+    
+    // First, check if this specific variant has its own images array
+    if (activeVariant && Array.isArray(activeVariant.images) && activeVariant.images.length > 0) {
+      variantMedia = activeVariant.images;
+    }
+    // If not, filter product-level images by this variant
+    else if (Array.isArray(product?.images)) {
+      // Try to match by Mongoose _id first (most reliable)
+      const mongooseVariantId = activeVariant?._id ? String(activeVariant._id) : null;
       
-      // First, check if this specific variant has its own images array
-      if (activeVariant && Array.isArray(activeVariant.images) && activeVariant.images.length > 0) {
-        variantMedia = activeVariant.images;
-      }
-      // If not, filter product-level images by this variant
-      else if (Array.isArray(product?.images)) {
-        // Try to match by Mongoose _id first (most reliable)
-        const mongooseVariantId = activeVariant?._id ? String(activeVariant._id) : null;
-        
-        variantMedia = product.images.filter(img => {
-          // Match by Mongoose subdocument _id
-          if (mongooseVariantId && img.variantId && String(img.variantId) === mongooseVariantId) {
-            return true;
-          }
-          // Match by variantIndex
-          if (typeof img.variantIndex === 'number' && img.variantIndex === activeVariantIndex) {
-            return true;
-          }
-          return false;
-        });
-
-        // If no images matched, fall back to all product images
-        if (variantMedia.length === 0) {
-          variantMedia = product.images;
+      variantMedia = product.images.filter(img => {
+        // Match by Mongoose subdocument _id
+        if (mongooseVariantId && img.variantId && String(img.variantId) === mongooseVariantId) {
+          return true;
         }
-      }
-
-      const computedImageUrls = Array.isArray(variantMedia)
-        ? variantMedia
-            .filter(im => !im.url || !im.url.match(/\.(mp4|webm|ogg)$/i))
-            .map((im) => (typeof im === 'string' ? im : im?.url))
-            .filter(Boolean)
-            .map((u) => resolve(u))
-        : (product?.primaryImage ? [resolve(product.primaryImage)] : []);
-
-      // Use the first image of this variant as the cart cover photo
-      const variantCoverImage = computedImageUrls[0] || null;
-
-      console.log('🛒 ADD TO CART DEBUG:', {
-        activeVariantIndex,
-        mongooseId: activeVariant?._id,
-        variantId: activeVariant?.variantId,
-        hasVariantImages: activeVariant?.images?.length || 0,
-        variantMediaCount: variantMedia.length,
-        computedImageUrlsCount: computedImageUrls.length,
-        variantCoverImage,
-        productImagesTotal: product?.images?.length || 0,
+        // Match by variantIndex
+        if (typeof img.variantIndex === 'number' && img.variantIndex === activeVariantIndex) {
+          return true;
+        }
+        return false;
       });
 
-      const variant = {
-        variantIndex: activeVariantIndex,
-        variantId: activeVariant?._id ? String(activeVariant._id) : undefined, // Use Mongoose subdocument _id as primary identifier
-        size: selectedSize,
-        imageUrl: variantCoverImage, // Use the first image of this variant as cover
-      };
+      // If no images matched, fall back to all product images
+      if (variantMedia.length === 0) {
+        variantMedia = product.images;
+      }
+    }
 
-      addToCart(product, quantity, variant);
-      showToast('Added to your bag');
+    const computedImageUrls = Array.isArray(variantMedia)
+      ? variantMedia
+          .filter(im => !im.url || !im.url.match(/\.(mp4|webm|ogg)$/i))
+          .map((im) => (typeof im === 'string' ? im : im?.url))
+          .filter(Boolean)
+          .map((u) => resolve(u))
+      : (product?.primaryImage ? [resolve(product.primaryImage)] : []);
+
+    // Use the first image of this variant as the cart cover photo
+    const variantCoverImage = computedImageUrls[0] || null;
+
+    console.log('🛒 ADD TO CART DEBUG:', {
+      activeVariantIndex,
+      mongooseId: activeVariant?._id,
+      variantId: activeVariant?.variantId,
+      hasVariantImages: activeVariant?.images?.length || 0,
+      variantMediaCount: variantMedia.length,
+      computedImageUrlsCount: computedImageUrls.length,
+      variantCoverImage,
+      productImagesTotal: product?.images?.length || 0,
     });
+
+    const variant = {
+      variantIndex: activeVariantIndex,
+      variantId: activeVariant?._id ? String(activeVariant._id) : undefined, // Use Mongoose subdocument _id as primary identifier
+      size: selectedSize,
+      imageUrl: variantCoverImage, // Use the first image of this variant as cover
+    };
+
+    addToCart(product, quantity, variant);
+    showToast('Added to your bag');
   };
 
   const handleWishlistToggle = () => {
