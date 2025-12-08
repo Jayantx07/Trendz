@@ -11,7 +11,7 @@ const WhatsAppButton = ({ phone = '919999999999', message = 'Hi! I need help wit
       aria-label="Chat on WhatsApp"
     >
       <img
-        src="/images/logo/Whatsapp.jpg"
+        src="https://res.cloudinary.com/dbx8ravps/image/upload/v1765208310/whatsapp-white-icon_gl4rg8.png"
         alt="WhatsApp"
         className="w-8 h-8 object-contain"
       />

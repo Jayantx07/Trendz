@@ -14,10 +14,10 @@ const MAIN_LINKS = [
 ];
 
 const SHOP_CATEGORIES = [
-  { name: 'Dresses', value: 'Dresses' },
-  { name: 'Kurtas', value: 'Kurtas' },
-  { name: 'Tops', value: 'Tops' },
-  { name: 'Bottoms', value: 'Bottoms' },
+  { name: 'Party Wear', value: 'party-wear' },
+  { name: 'Western Wear', value: 'western-dress' },
+  { name: 'Casual Wear', value: 'casual-wear' },
+  { name: 'Co-ord Set', value: 'co-ord-set' },
 ];
 
 const Navbar = () => {

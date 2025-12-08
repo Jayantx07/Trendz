@@ -58,14 +58,17 @@ const About = () => {
       <section className="mt-4">
         <HorizontalScrollCarousel
           cards={[
-            { id: 1, title: 'Evening Gown', url: '/images/products/dresses/full length pieces/evening-gown-1.jpg' },
-            { id: 2, title: 'Beige Skirt', url: '/images/products/dresses/skirts/biege skirt.jpg' },
-            { id: 3, title: 'Maroon One Piece', url: '/images/products/dresses/one piece/maroon one piece.jpg' },
-            { id: 4, title: 'Black Outfit', url: '/images/products/dresses/full outfits/black outfit.jpg' },
-            { id: 5, title: 'Pattern Gown', url: '/images/products/dresses/gowns/blue white liquid pattern gown.jpg' },
-            { id: 6, title: 'Shiny Silver Dress', url: '/images/products/dresses/full length pieces/shiny silver dress.jpg' },
-            { id: 7, title: 'White Full Piece', url: '/images/products/dresses/full length pieces/white full piece.jpg' },
-            { id: 8, title: 'Pattern Skirt', url: '/images/products/dresses/skirts/black and white pattern skirt.jpg' },
+            { id: 1, title: 'Party Wear', url: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764709225/Party-wear_nzxs8i.jpg' },
+            { id: 2, title: 'Western Wear', url: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764709510/Western-wear_skuoka.png' },
+            { id: 3, title: 'Casual Wear', url: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764709510/Casual-wear_vgvvdn.png' },
+            { id: 4, title: 'Co-ord Set', url: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764709200/Co-ord_set_ihclt5.jpg' },
+            { id: 5, title: 'Collection Piece', url: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764706441/products/file_xzilso.webp' },
+            { id: 6, title: 'Collection Piece', url: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764705963/products/file_uupjut.webp' },
+            { id: 7, title: 'Collection Piece', url: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764705634/products/file_vixiau.jpg' },
+            { id: 8, title: 'Collection Piece', url: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764702550/products/file_xr70tf.webp' },
+            { id: 9, title: 'Collection Piece', url: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764701887/products/file_qfqbmo.webp' },
+            { id: 10, title: 'Collection Piece', url: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764685123/products/file_erdwm2.webp' },
+            { id: 11, title: 'Collection Piece', url: 'https://res.cloudinary.com/dbx8ravps/image/upload/v1764675935/products/file_svgv20.jpg' },
           ]}
         />
       </section>
