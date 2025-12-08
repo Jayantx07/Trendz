@@ -40,9 +40,9 @@ const Contact = () => {
 
         {/* Contact form */}
         <form className="space-y-3" onSubmit={handleSubmit}>
-          <input className="w-full border border-gray-300 rounded px-3 py-2" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-          <input className="w-full border border-gray-300 rounded px-3 py-2" placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <textarea className="w-full border border-gray-300 rounded px-3 py-2" rows={5} placeholder="Message" value={message} onChange={(e) => setMessage(e.target.value)} />
+          <input className="w-full border border-gray-300 rounded px-3 py-2 text-black placeholder-gray-500" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="w-full border border-gray-300 rounded px-3 py-2 text-black placeholder-gray-500" placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <textarea className="w-full border border-gray-300 rounded px-3 py-2 text-black placeholder-gray-500" rows={5} placeholder="Message" value={message} onChange={(e) => setMessage(e.target.value)} />
           <button type="submit" className="btn-primary rounded-[3px]">Send</button>
         </form>
       </div>
