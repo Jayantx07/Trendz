@@ -218,6 +218,18 @@ const Navbar = () => {
                 )}
               </Link>
 
+              {/* Admin Button */}
+              {user && user.role === 'admin' && (
+                <Link
+                  to="/admin"
+                  className={`p-2 transition-colors ${linkColor}`}
+                  aria-label="Admin Panel"
+                  title="Admin Panel"
+                >
+                  <span className="font-tenor text-xs font-bold border border-current px-2 py-1 rounded">ADMIN</span>
+                </Link>
+              )}
+
               {/* Profile (moved to cart's old position) shows avatar/photo */}
               <Link
                 to={user ? "/account" : "/login"}
@@ -346,6 +358,15 @@ const Navbar = () => {
                 >
                   WISHLIST ({wishlistCount})
                 </Link>
+                {user && user.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className="block px-3 py-2 text-sm font-tenor tracking-wide text-gray-900 hover:text-accent transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    ADMIN PANEL
+                  </Link>
+                )}
                 <Link
                   to={user ? "/account" : "/login"}
                   className="block px-3 py-2 text-sm font-tenor tracking-wide text-gray-900 hover:text-accent transition-colors"
