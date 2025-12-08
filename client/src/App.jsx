@@ -30,7 +30,8 @@ import { SiteConfigProvider } from './context/SiteConfigContext.jsx';
 
 function App() {
   const location = useLocation();
-  const hideFooter = location.pathname.startsWith('/account') || location.pathname === '/wishlist';
+  const isAdmin = location.pathname.startsWith('/admin');
+  const hideFooter = location.pathname.startsWith('/account') || location.pathname === '/wishlist' || isAdmin;
   return (
     <AuthProvider>
       <CartProvider>
@@ -40,7 +41,7 @@ function App() {
             <SiteConfigProvider>
             <div className="min-h-screen flex flex-col">
               <ApiStatus />
-              <Navbar />
+              {!isAdmin && <Navbar />}
               <ScrollToTop />
               <main className="flex-1">
                 <AnimatePresence mode="wait">
@@ -52,7 +53,7 @@ function App() {
                     <Route path="/wishlist" element={<Wishlist />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/account/*" element={<PrivateRoute><Account /></PrivateRoute>} />
-                    <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+                    <Route path="/admin/*" element={<AdminRoute><Admin /></AdminRoute>} />
                     <Route path="/about" element={<About />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/login" element={<Login />} />

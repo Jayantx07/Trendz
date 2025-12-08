@@ -66,21 +66,25 @@ const orderSchema = new mongoose.Schema({
       default: 'standard'
     },
     address: {
-      firstName: String,
-      lastName: String,
-      street: String,
-      city: String,
-      state: String,
-      zipCode: String,
-      country: {
-        type: String,
-        default: 'United States'
-      },
-      phone: String
+      fullName: { type: String, required: true },
+      email: { type: String, required: true },
+      phone: { type: String, required: true },
+      street: { type: String, required: true },
+      city: { type: String, required: true },
+      state: { type: String, required: true },
+      pincode: { type: String, required: true },
+      country: { type: String, required: true },
+      landmark: String,
+      alternatePhone: String
     },
     trackingNumber: String,
     carrier: String,
     estimatedDelivery: Date
+  },
+  razorpay: {
+    orderId: String,
+    paymentId: String,
+    signature: String
   },
   discount: {
     code: String,

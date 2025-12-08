@@ -5,6 +5,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import ErrorBoundary from './components/common/ErrorBoundary.jsx'
 import App from './App.jsx'
 import './index.css'
+import './scrollbar.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -103,7 +103,7 @@ const Cart = () => {
           <div className="lg:col-span-2 space-y-4">
             {cart.map((item) => (
               <motion.div
-                key={item.product + (item.variant?.size || '') + (item.variant?.color?.name || '')}
+                key={`${item.product._id || item.product}-${item.variant?.size || 'nosize'}-${item.variant?.color?.name || 'nocolor'}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -246,6 +246,7 @@ const Cart = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => navigate('/checkout')}
                 className="w-full btn-primary text-lg py-4 flex items-center justify-center gap-2 rounded-[3px]"
               >
                 Proceed to Checkout

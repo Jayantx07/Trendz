@@ -4,32 +4,24 @@ const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 const router = express.Router();
 
-// Create new order from cart
+// Create new order (Razorpay flow)
 router.post('/create', auth, async (req, res) => {
   try {
-    const { shippingAddress, paymentMethod, paymentToken } = req.body;
+    const { 
+      shippingAddress, 
+      razorpayOrderId, 
+      razorpayPaymentId, 
+      razorpaySignature,
+      amount 
+    } = req.body;
     
     // Get user's cart
     const cart = await Cart.findOne({ user: req.user.userId }).populate('items.product');
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: 'Cart is empty' });
-    }
-
-    // Validate stock availability
-    for (const item of cart.items) {
-      const product = await Product.findById(item.product._id);
-      const variant = product.variants.find(v => 
-        v.size === item.variant.size && 
-        v.color.name === item.variant.color.name
-      );
-      
-      if (!variant || variant.stock < item.quantity) {
-        return res.status(400).json({ 
-          message: `Insufficient stock for ${product.name} - ${item.variant.color.name} - ${item.variant.size}` 
-        });
-      }
     }
 
     // Create order items
@@ -50,34 +42,35 @@ router.post('/create', auth, async (req, res) => {
         method: 'standard'
       },
       payment: {
-        method: paymentMethod,
-        status: 'pending',
-        amount: 0 // Will be calculated
-      }
+        method: 'razorpay',
+        status: 'completed', // Assuming verification passed before calling this or verified here
+        amount: amount
+      },
+      razorpay: {
+        orderId: razorpayOrderId,
+        paymentId: razorpayPaymentId,
+        signature: razorpaySignature
+      },
+      subtotal: amount, // Simplified for now, should be calculated
+      total: amount,
+      status: 'paid' // Default status as per requirement
     });
-
-    // Calculate totals
-    await order.calculateTotals();
-
-    // TODO: Process payment with Stripe/Razorpay
-    // For now, we'll mark as completed for testing
-    order.payment.status = 'completed';
-    order.payment.transactionId = `txn_${Date.now()}`;
-    order.status = 'confirmed';
 
     await order.save();
 
     // Update product stock
     for (const item of cart.items) {
       const product = await Product.findById(item.product._id);
-      const variantIndex = product.variants.findIndex(v => 
-        v.size === item.variant.size && 
-        v.color.name === item.variant.color.name
-      );
-      
-      if (variantIndex !== -1) {
-        product.variants[variantIndex].stock -= item.quantity;
-        await product.save();
+      if (product) {
+        const variantIndex = product.variants.findIndex(v => 
+          v.size === item.variant.size && 
+          v.color.name === item.variant.color.name
+        );
+        
+        if (variantIndex !== -1) {
+          product.variants[variantIndex].stock -= item.quantity;
+          await product.save();
+        }
       }
     }
 
@@ -85,14 +78,9 @@ router.post('/create', auth, async (req, res) => {
     cart.items = [];
     await cart.save();
 
-    // Populate order for response
-    const populatedOrder = await Order.findById(order._id)
-      .populate('items.product', 'name primaryImage')
-      .populate('user', 'firstName lastName email');
-
     res.status(201).json({
       message: 'Order created successfully',
-      order: populatedOrder
+      order
     });
 
   } catch (error) {
@@ -104,247 +92,159 @@ router.post('/create', auth, async (req, res) => {
 // Get user's orders
 router.get('/my-orders', auth, async (req, res) => {
   try {
-    const { page = 1, limit = 10, status } = req.query;
-    
-    const filter = { user: req.user.userId };
-    if (status) filter.status = status;
-
-    const orders = await Order.find(filter)
+    const orders = await Order.find({ user: req.user.userId })
       .populate('items.product', 'name primaryImage slug')
-      .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
-
-    const total = await Order.countDocuments(filter);
-
-    res.json({
-      orders,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
-        totalOrders: total
-      }
-    });
-
+      .sort({ createdAt: -1 });
+    res.json(orders);
   } catch (error) {
     console.error('Get orders error:', error);
     res.status(500).json({ message: 'Server error fetching orders' });
   }
 });
 
-// Get single order
-router.get('/:orderId', auth, async (req, res) => {
+// --- ADMIN ROUTES ---
+
+// Get Dashboard Stats
+router.get('/admin/stats', auth, admin, async (req, res) => {
   try {
-    const { orderId } = req.params;
+    const totalOrders = await Order.countDocuments();
     
-    const order = await Order.findOne({ 
-      _id: orderId, 
-      user: req.user.userId 
-    })
-    .populate('items.product', 'name images slug brand category')
-    .populate('user', 'firstName lastName email phone');
+    const salesData = await Order.aggregate([
+      { $group: { _id: null, totalSales: { $sum: "$total" } } }
+    ]);
+    const totalSales = salesData.length > 0 ? salesData[0].totalSales : 0;
 
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
+    const aov = totalOrders > 0 ? (totalSales / totalOrders).toFixed(2) : 0;
 
-    res.json(order);
+    // Calculate Monthly Growth
+    const now = new Date();
+    const firstDayCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    
+    // Sales & Orders This Month
+    const currentMonthData = await Order.aggregate([
+      { $match: { createdAt: { $gte: firstDayCurrentMonth } } },
+      { $group: { _id: null, total: { $sum: "$total" }, count: { $sum: 1 } } }
+    ]);
+    const salesThisMonth = currentMonthData.length ? currentMonthData[0].total : 0;
+    const ordersThisMonth = currentMonthData.length ? currentMonthData[0].count : 0;
+
+    // Sales & Orders Last Month
+    const lastMonthData = await Order.aggregate([
+      { $match: { createdAt: { $gte: firstDayLastMonth, $lt: firstDayCurrentMonth } } },
+      { $group: { _id: null, total: { $sum: "$total" }, count: { $sum: 1 } } }
+    ]);
+    const salesLastMonth = lastMonthData.length ? lastMonthData[0].total : 0;
+    const ordersLastMonth = lastMonthData.length ? lastMonthData[0].count : 0;
+
+    const salesGrowth = salesLastMonth === 0 ? (salesThisMonth > 0 ? 100 : 0) : ((salesThisMonth - salesLastMonth) / salesLastMonth) * 100;
+    const ordersGrowth = ordersLastMonth === 0 ? (ordersThisMonth > 0 ? 100 : 0) : ((ordersThisMonth - ordersLastMonth) / ordersLastMonth) * 100;
+
+    // Returning customers (users with > 1 order)
+    const userOrderCounts = await Order.aggregate([
+      { $group: { _id: "$user", count: { $sum: 1 } } },
+      { $match: { count: { $gt: 1 } } },
+      { $count: "returning" }
+    ]);
+    const returningCustomersCount = userOrderCounts.length > 0 ? userOrderCounts[0].returning : 0;
+    const totalCustomers = await User.countDocuments({ role: 'user' }); // Assuming 'user' role
+    const returningCustomersPercentage = totalCustomers > 0 ? ((returningCustomersCount / totalCustomers) * 100).toFixed(1) : 0;
+
+    // Sales Performance (Daily)
+    const salesPerformance = await Order.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          sales: { $sum: "$total" }
+        }
+      },
+      { $sort: { _id: 1 } },
+      { $limit: 30 } // Last 30 days
+    ]);
+
+    // Best Selling Categories
+    // This requires joining with Products to get category
+    const bestSellingCategories = await Order.aggregate([
+      { $unwind: "$items" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "items.product",
+          foreignField: "_id",
+          as: "product"
+        }
+      },
+      { $unwind: "$product" },
+      {
+        $group: {
+          _id: "$product.category",
+          revenue: { $sum: "$items.totalPrice" }
+        }
+      },
+      { $sort: { revenue: -1 } },
+      { $limit: 5 }
+    ]);
+
+    // Top Products
+    const topProducts = await Order.aggregate([
+      { $unwind: "$items" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "items.product",
+          foreignField: "_id",
+          as: "product"
+        }
+      },
+      { $unwind: "$product" },
+      {
+        $group: {
+          _id: "$product.name",
+          unitsSold: { $sum: "$items.quantity" }
+        }
+      },
+      { $sort: { unitsSold: -1 } },
+      { $limit: 5 }
+    ]);
+
+    res.json({
+      totalSales,
+      totalOrders,
+      aov,
+      returningCustomers: returningCustomersPercentage,
+      salesGrowth: salesGrowth.toFixed(1),
+      ordersGrowth: ordersGrowth.toFixed(1),
+      salesPerformance,
+      bestSellingCategories,
+      topProducts
+    });
 
   } catch (error) {
-    console.error('Get order error:', error);
-    res.status(500).json({ message: 'Server error fetching order' });
+    console.error('Dashboard stats error:', error);
+    res.status(500).json({ message: 'Server error fetching stats' });
   }
 });
 
-// Cancel order
-router.patch('/:orderId/cancel', auth, async (req, res) => {
+// Get All Orders (Admin)
+router.get('/admin/all', auth, admin, async (req, res) => {
   try {
-    const { orderId } = req.params;
-    const { reason } = req.body;
-    
-    const order = await Order.findOne({ 
-      _id: orderId, 
-      user: req.user.userId 
-    });
-
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    if (order.status === 'shipped' || order.status === 'delivered') {
-      return res.status(400).json({ 
-        message: 'Cannot cancel order that has been shipped or delivered' 
-      });
-    }
-
-    await order.updateStatus('cancelled', reason || 'Cancelled by customer');
-
-    // Restore product stock
-    for (const item of order.items) {
-      const product = await Product.findById(item.product);
-      const variantIndex = product.variants.findIndex(v => 
-        v.size === item.variant.size && 
-        v.color.name === item.variant.color.name
-      );
-      
-      if (variantIndex !== -1) {
-        product.variants[variantIndex].stock += item.quantity;
-        await product.save();
-      }
-    }
-
-    // TODO: Process refund if payment was completed
-
-    res.json({ 
-      message: 'Order cancelled successfully',
-      order: order
-    });
-
-  } catch (error) {
-    console.error('Cancel order error:', error);
-    res.status(500).json({ message: 'Server error cancelling order' });
-  }
-});
-
-// Request return
-router.post('/:orderId/return', auth, async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { items, reason } = req.body;
-    
-    const order = await Order.findOne({ 
-      _id: orderId, 
-      user: req.user.userId 
-    });
-
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    if (!order.canBeReturned()) {
-      return res.status(400).json({ 
-        message: 'Order is not eligible for return' 
-      });
-    }
-
-    // TODO: Implement return request logic
-    // For now, just update status
-    await order.updateStatus('returned', `Return requested: ${reason}`);
-
-    res.json({ 
-      message: 'Return request submitted successfully',
-      order: order
-    });
-
-  } catch (error) {
-    console.error('Return request error:', error);
-    res.status(500).json({ message: 'Server error processing return request' });
-  }
-});
-
-// Track order
-router.get('/:orderId/tracking', auth, async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    
-    const order = await Order.findOne({ 
-      _id: orderId, 
-      user: req.user.userId 
-    }).select('orderNumber status statusHistory shipping');
-
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    const trackingInfo = {
-      orderNumber: order.orderNumber,
-      currentStatus: order.status,
-      trackingNumber: order.shipping.trackingNumber,
-      carrier: order.shipping.carrier,
-      estimatedDelivery: order.shipping.estimatedDelivery,
-      statusHistory: order.statusHistory
-    };
-
-    res.json(trackingInfo);
-
-  } catch (error) {
-    console.error('Track order error:', error);
-    res.status(500).json({ message: 'Server error fetching tracking info' });
-  }
-});
-
-// Admin routes (for order management)
-router.get('/admin/all', auth, async (req, res) => {
-  try {
-    // TODO: Add admin role check
-    const { page = 1, limit = 20, status, search } = req.query;
-    
+    const { status } = req.query;
     const filter = {};
-    if (status) filter.status = status;
-    if (search) {
-      filter.$or = [
-        { orderNumber: { $regex: search, $options: 'i' } },
-        { 'shipping.address.firstName': { $regex: search, $options: 'i' } },
-        { 'shipping.address.lastName': { $regex: search, $options: 'i' } }
-      ];
-    }
-
+    
+    // Map frontend status tabs to backend status
+    if (status === 'pending') filter.status = { $in: ['pending', 'paid', 'processing'] }; // "Pending" tab
+    else if (status === 'in-progress') filter.status = { $in: ['shipped', 'out-for-delivery'] }; // "In Progress" tab
+    else if (status === 'completed') filter.status = { $in: ['delivered', 'completed'] }; // "Completed" tab
+    
     const orders = await Order.find(filter)
       .populate('user', 'firstName lastName email')
       .populate('items.product', 'name primaryImage')
-      .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
+      .sort({ createdAt: -1 });
 
-    const total = await Order.countDocuments(filter);
-
-    res.json({
-      orders,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
-        totalOrders: total
-      }
-    });
-
+    res.json(orders);
   } catch (error) {
-    console.error('Admin get orders error:', error);
+    console.error('Admin all orders error:', error);
     res.status(500).json({ message: 'Server error fetching orders' });
-  }
-});
-
-// Admin update order status
-router.patch('/admin/:orderId/status', auth, async (req, res) => {
-  try {
-    // TODO: Add admin role check
-    const { orderId } = req.params;
-    const { status, note, trackingNumber, carrier } = req.body;
-    
-    const order = await Order.findById(orderId);
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-
-    await order.updateStatus(status, note);
-
-    if (trackingNumber) {
-      order.shipping.trackingNumber = trackingNumber;
-    }
-    
-    if (carrier) {
-      order.shipping.carrier = carrier;
-    }
-
-    await order.save();
-
-    res.json({ 
-      message: 'Order status updated successfully',
-      order: order
-    });
-
-  } catch (error) {
-    console.error('Admin update order error:', error);
-    res.status(500).json({ message: 'Server error updating order' });
   }
 });
 

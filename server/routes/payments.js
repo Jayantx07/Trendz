@@ -1,92 +1,80 @@
 const express = require('express');
 const router = express.Router();
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
+const auth = require('../middleware/auth');
 
-// Helpers to talk to PayPal REST without extra deps
-const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || process.env.PAYPAL_CLIENT_ID?.replace('-', '_') || process.env.PAYPAL_CLIENT_ID;
-const PAYPAL_SECRET_KEY = process.env.PAYPAL_SECRET_KEY || process.env.PAYPAL_SECRET || process.env.PAYPAL_SECRET_KEY;
-const PAYPAL_ENV = (process.env.PAYPAL_ENV || 'sandbox').toLowerCase();
-const PAYPAL_API_BASE = PAYPAL_ENV === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
-
-async function getAccessToken() {
-  const auth = Buffer.from(`${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET_KEY}`).toString('base64');
-  const res = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${auth}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: 'grant_type=client_credentials',
+// Initialize Razorpay with environment variables
+let razorpay;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
   });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`PayPal token error: ${res.status} ${txt}`);
-  }
-  const data = await res.json();
-  return data.access_token;
+} else {
+  console.warn('Razorpay credentials missing. Payment features will be disabled.');
 }
 
-// Expose client id to frontend
-router.get('/paypal/config', (req, res) => {
-  if (!process.env.PAYPAL_CLIENT_ID) {
-    return res.status(500).json({ message: 'Missing PAYPAL_CLIENT_ID' });
-  }
-  res.json({ clientId: process.env.PAYPAL_CLIENT_ID, env: PAYPAL_ENV });
-});
-
-// Create order
-router.post('/paypal/create-order', async (req, res) => {
+// Create Razorpay Order
+router.post('/create-order', auth, async (req, res) => {
   try {
-    const { amount = '19.99', currency = 'USD' } = req.body || {};
-    const accessToken = await getAccessToken();
-
-    const orderRes = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({
-        intent: 'CAPTURE',
-        purchase_units: [
-          {
-            amount: { currency_code: currency, value: String(amount) },
-          },
-        ],
-      }),
-    });
-
-    const data = await orderRes.json();
-    if (!orderRes.ok) {
-      return res.status(orderRes.status).json(data);
+    if (!razorpay) {
+      console.error('Razorpay not initialized');
+      return res.status(500).json({ message: 'Payment gateway not configured' });
     }
-    return res.json({ id: data.id });
-  } catch (err) {
-    console.error('PayPal create-order error:', err.message);
-    return res.status(500).json({ message: 'Server error' });
+
+    const { amount, currency = 'INR' } = req.body;
+
+    if (!amount) {
+      return res.status(400).json({ message: 'Amount is required' });
+    }
+
+    const options = {
+      amount: Math.round(amount * 100), // amount in smallest currency unit (paise)
+      currency,
+      receipt: `receipt_${Date.now()}`
+    };
+
+    const order = await razorpay.orders.create(options);
+    res.json(order);
+  } catch (error) {
+    console.error('Error creating Razorpay order:', error);
+    res.status(500).json({ message: 'Something went wrong with payment initialization' });
   }
 });
 
-// Capture order
-router.post('/paypal/capture/:orderId', async (req, res) => {
+// Verify Payment Signature
+router.post('/verify', auth, async (req, res) => {
   try {
-    const { orderId } = req.params;
-    const accessToken = await getAccessToken();
-    const capRes = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders/${orderId}/capture`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    const data = await capRes.json();
-    if (!capRes.ok) {
-      return res.status(capRes.status).json(data);
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest('hex');
+
+    const isAuthentic = expectedSignature === razorpay_signature;
+
+    if (isAuthentic) {
+      res.json({ success: true, message: 'Payment verified successfully' });
+    } else {
+      res.status(400).json({ success: false, message: 'Invalid signature' });
     }
-    return res.json(data);
-  } catch (err) {
-    console.error('PayPal capture error:', err.message);
-    return res.status(500).json({ message: 'Server error' });
+  } catch (error) {
+    console.error('Error verifying payment:', error);
+    res.status(500).json({ message: 'Server error during verification' });
   }
+});
+
+// Get Razorpay Key ID (for frontend)
+router.get('/key', (req, res) => {
+  if (!process.env.RAZORPAY_KEY_ID) {
+    console.error('RAZORPAY_KEY_ID is missing');
+    return res.status(500).json({ message: 'Payment configuration missing' });
+  }
+  res.json({ key: process.env.RAZORPAY_KEY_ID });
 });
 
 module.exports = router;

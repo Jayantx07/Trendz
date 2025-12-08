@@ -57,6 +57,8 @@ app.use('/api/admin/products', require('./routes/adminProducts'));
 const cartRoutes = require('./routes/cart');
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', require('./routes/orders'));
+app.use('/api/queries', require('./routes/queries'));
+app.use('/api/payments', require('./routes/payments'));
 // app.use('/api/users', require('./routes/users'));
 // app.use('/api/blog', require('./routes/blog'));
 // app.use('/api/appointments', require('./routes/appointments'));
