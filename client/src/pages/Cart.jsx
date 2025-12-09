@@ -116,11 +116,13 @@ const Cart = () => {
                   <div className="w-24 h-32 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                     {(() => {
                       const product = item.product || {};
-                      const variantImage = item.variant?.imageUrl;
-                      const image = variantImage
+                      // Priority: server-computed displayImage > stored variant.imageUrl > fallbacks
+                      const image = item.displayImage?.url
+                        || item.variant?.imageUrl
                         || product.primaryImage
                         || (Array.isArray(product.images) && (product.images[0]?.url || product.images[0]))
                         || '/images/placeholder.jpg';
+                      
                       return (
                         <img
                           src={image}

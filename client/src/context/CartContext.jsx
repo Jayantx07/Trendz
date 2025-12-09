@@ -138,59 +138,37 @@ const CartProvider = ({ children }) => {
         return sameProduct && sameVariantId && sameSize;
       });
     }
-    // Use the imageUrl provided by ProductDetail (which captured the exact displayed variant image)
-    // Fall back to computing from product images only if not provided
-    let variantImageUrl = variant.imageUrl || '';
-
-  console.log('🛒 CART CONTEXT - variant.imageUrl received:', variant.imageUrl);
-
-    if (!variantImageUrl) {
-      const resolvedVariantIndex =
-        typeof variant.variantIndex === 'number'
-          ? variant.variantIndex
-          : (Array.isArray(product.variants) ? 0 : null);
-
-      const variantImages =
-        Array.isArray(product.images) && resolvedVariantIndex !== null
-          ? product.images.filter((img) => {
-              if (variant.variantId && img.variantId) {
-                return img.variantId === variant.variantId;
-              }
-              if (typeof img.variantIndex === 'number') {
-                return img.variantIndex === resolvedVariantIndex;
-              }
-              return false;
-            })
-          : product.images || [];
-
-      variantImageUrl = Array.isArray(variantImages) && variantImages.length
-        ? (variantImages.find((im) => im.isPrimary)?.url || variantImages[0]?.url || '')
-        : (product.primaryImage || '');
-    }
+    
+    // CRITICAL: Use the imageUrl provided by ProductDetail, which captured the exact displayed variant image
+    // Do NOT recompute here to avoid overwriting the correct image
+    const variantImageUrl = variant.imageUrl || '';
 
     if (idx > -1) {
+      // Merging with existing item - keep the ORIGINAL imageUrl to preserve variant-specific image
+      const existingImageUrl = cart[idx].variant?.imageUrl;
+      
       updated = [...cart];
       updated[idx].quantity += quantity;
+      // Do NOT overwrite imageUrl when merging - keep the original one that was stored
       updated[idx].variant = {
         ...updated[idx].variant,
         ...variant,
-        imageUrl: variantImageUrl,
+        imageUrl: existingImageUrl || variantImageUrl, // Prefer existing
       };
     } else {
-      updated = [
-        ...cart,
-        {
-          product: product._id,
-          variant: {
-            ...variant,
-            imageUrl: variantImageUrl,
-          },
-          quantity,
-          price: product.basePrice,
-          salePrice: product.salePrice
-        }
-      ];
+      const newItem = {
+        product: product._id,
+        variant: {
+          ...variant,
+          imageUrl: variantImageUrl,
+        },
+        quantity,
+        price: product.basePrice,
+        salePrice: product.salePrice
+      };
+      updated = [...cart, newItem];
     }
+    
     saveCart(updated);
   };
 

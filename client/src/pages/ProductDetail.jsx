@@ -161,25 +161,22 @@ const ProductDetail = () => {
           .map((u) => resolve(u))
       : (product?.primaryImage ? [resolve(product.primaryImage)] : []);
 
-    // Use the first image of this variant as the cart cover photo
-    const variantCoverImage = computedImageUrls[0] || null;
+    // CRITICAL: Use the CURRENTLY DISPLAYED image (what user is actually seeing)
+    // This ensures the exact image shown on screen is saved to cart
+    const variantCoverImage = imageUrls[currentImageIndex] || computedImageUrls[0] || null;
 
-    console.log('🛒 ADD TO CART DEBUG:', {
-      activeVariantIndex,
-      mongooseId: activeVariant?._id,
-      variantId: activeVariant?.variantId,
-      hasVariantImages: activeVariant?.images?.length || 0,
-      variantMediaCount: variantMedia.length,
-      computedImageUrlsCount: computedImageUrls.length,
-      variantCoverImage,
-      productImagesTotal: product?.images?.length || 0,
+    // Find the original raw image object (before CDN resolution) to store in cart
+    const currentDisplayedImageObj = variantMedia.find(img => {
+      const resolvedUrl = resolve(img.url || img);
+      return resolvedUrl === imageUrls[currentImageIndex];
     });
+    const rawImageUrl = currentDisplayedImageObj?.url || variantCoverImage;
 
     const variant = {
       variantIndex: activeVariantIndex,
-      variantId: activeVariant?._id ? String(activeVariant._id) : undefined, // Use Mongoose subdocument _id as primary identifier
+      variantId: activeVariant?._id ? String(activeVariant._id) : undefined,
       size: selectedSize,
-      imageUrl: variantCoverImage, // Use the first image of this variant as cover
+      imageUrl: rawImageUrl,
     };
 
     addToCart(product, quantity, variant);
@@ -269,11 +266,18 @@ const ProductDetail = () => {
   // Filter images/videos for selected variant (using variantIndex/variantId)
   let variantMedia = [];
   if (Array.isArray(product?.images)) {
-    const activeVariantId = activeVariant?.variantId;
+    // Use Mongoose _id as the primary identifier (most reliable)
+    const activeVariantMongooseId = activeVariant?._id ? String(activeVariant._id) : null;
 
     variantMedia = product.images.filter(img => {
-      if (activeVariantId && img.variantId) return img.variantId === activeVariantId;
-      if (typeof img.variantIndex === 'number') return img.variantIndex === activeVariantIndex;
+      // Match by Mongoose _id stored in variantId field
+      if (activeVariantMongooseId && img.variantId && String(img.variantId) === activeVariantMongooseId) {
+        return true;
+      }
+      // Match by variantIndex
+      if (typeof img.variantIndex === 'number' && img.variantIndex === activeVariantIndex) {
+        return true;
+      }
       return false;
     });
 

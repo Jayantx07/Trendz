@@ -7,11 +7,14 @@ const cartItemSchema = new mongoose.Schema({
     required: true
   },
   variant: {
+    variantId: String,        // Mongoose subdocument _id from Product.variants[]
+    variantIndex: Number,     // Index in Product.variants[] array
     size: String,
     color: {
       name: String,
       hex: String
-    }
+    },
+    imageUrl: String          // Exact image URL for this variant selection
   },
   quantity: {
     type: Number,
