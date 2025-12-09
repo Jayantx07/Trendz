@@ -36,20 +36,20 @@ const ProductCard = ({ product }) => {
           />
         )}
       </div>
-      <div className="p-4 flex flex-col h-full">
+      <div className="p-3 md:p-4 flex flex-col h-full">
         <h4
           className="text-gray-900 text-base md:text-lg mb-3 cursor-pointer hover:text-accent line-clamp-2 min-h-[3.5rem]"
           onClick={go}
         >
           {product.name}
         </h4>
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex flex-col gap-1 mb-4">
           {product.originalPrice && (
-            <span className="text-gray-400 line-through">
+            <span className="text-gray-400 line-through text-sm">
               ₹ {product.originalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </span>
           )}
-          <span className="text-gray-900 font-medium">
+          <span className="text-gray-900 font-medium text-lg">
             ₹ {product.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </span>
         </div>
@@ -77,7 +77,7 @@ const ProductShowcase = ({ title, products }) => {
             </h2>
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
           {products.map((p, i) => (
             <ProductCard key={i} product={p} />
           ))}

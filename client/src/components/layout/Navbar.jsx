@@ -342,7 +342,7 @@ const Navbar = () => {
                       placeholder="Search"
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
-                      className="pl-10 pr-16 py-2 w-[180px] focus:w-[420px] transition-all duration-200 ease-out rounded-full bg-white text-sm text-gray-900 placeholder:text-gray-500 border border-gray-800/40 focus:border-gray-800/70 shadow-sm mx-auto"
+                      className="pl-10 pr-16 py-2 w-[180px] focus:w-[420px] transition-all duration-200 ease-out rounded-full bg-white text-sm text-black placeholder:text-gray-500 border border-gray-800/40 focus:border-gray-800/70 shadow-sm mx-auto"
                     />
                     <button type="submit" className="hidden" aria-hidden="true" />
                   </div>
@@ -397,7 +397,7 @@ const Navbar = () => {
                       placeholder="Search products..."
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
-                      className="flex-1 outline-none text-sm"
+                      className="flex-1 outline-none text-sm text-black"
                     />
                     <button type="submit" className="text-sm text-accent">Go</button>
                   </form>

@@ -27,6 +27,7 @@ import { WishlistProvider } from './context/WishlistContext.jsx';
 import { SearchProvider } from './context/SearchContext.jsx';
 import { MediaMapProvider } from './context/MediaMapContext.jsx';
 import { SiteConfigProvider } from './context/SiteConfigContext.jsx';
+import { ToastProvider } from './context/ToastContext.jsx';
 
 function App() {
   const location = useLocation();
@@ -39,6 +40,7 @@ function App() {
           <SearchProvider>
             <MediaMapProvider>
             <SiteConfigProvider>
+            <ToastProvider>
             <div className="min-h-screen flex flex-col">
               <ApiStatus />
               {!isAdmin && <Navbar />}
@@ -64,6 +66,7 @@ function App() {
               {!hideFooter && <Footer />}
               <WhatsAppButton phone="919079005217" message="Hi, I need help with VASAAE." />
             </div>
+            </ToastProvider>
             </SiteConfigProvider>
             </MediaMapProvider>
           </SearchProvider>

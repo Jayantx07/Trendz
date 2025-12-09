@@ -16,8 +16,10 @@ router.get('/', async (req, res) => {
       maxPrice,
       size,
       color,
+      discount,
       sort = 'newest',
       search,
+      q,
       onSale,
       featured,
       newArrivals,
@@ -27,8 +29,24 @@ router.get('/', async (req, res) => {
     // Build filter object
     const filter = { status: 'active' };
 
-    if (category) filter.category = category;
-    if (gender) filter.gender = gender;
+    if (category) {
+      const categories = category.split(',');
+      if (categories.length > 1) {
+        filter.category = { $in: categories };
+      } else {
+        filter.category = category;
+      }
+    }
+    
+    if (gender) {
+      const genders = gender.split(',');
+      if (genders.length > 1) {
+        filter.gender = { $in: genders };
+      } else {
+        filter.gender = gender;
+      }
+    }
+
     if (collection) filter.collections = collection;
     if (onSale === 'true') filter.isOnSale = true;
     if (featured === 'true') filter.isFeatured = true;
@@ -37,27 +55,60 @@ router.get('/', async (req, res) => {
 
     // Price filter
     if (minPrice || maxPrice) {
-      filter.basePrice = {};
-      if (minPrice) filter.basePrice.$gte = parseFloat(minPrice);
-      if (maxPrice) filter.basePrice.$lte = parseFloat(maxPrice);
+      const min = parseFloat(minPrice) || 0;
+      const max = parseFloat(maxPrice) || Number.MAX_SAFE_INTEGER;
+
+      const effectivePriceExpr = {
+        $cond: {
+          if: { $gt: ["$salePrice", 0] },
+          then: "$salePrice",
+          else: "$basePrice"
+        }
+      };
+
+      filter.$expr = {
+        $and: [
+          { $gte: [effectivePriceExpr, min] },
+          { $lte: [effectivePriceExpr, max] }
+        ]
+      };
     }
 
     // Size filter
     if (size) {
-      filter['variants.size'] = size;
+      const sizes = size.split(',');
+      if (sizes.length > 1) {
+        filter['variants.size'] = { $in: sizes };
+      } else {
+        filter['variants.size'] = size;
+      }
     }
 
     // Color filter
     if (color) {
-      filter['variants.color.name'] = { $regex: color, $options: 'i' };
+      const colors = color.split(',');
+      if (colors.length > 1) {
+        // Construct regex for each color and use $or
+        filter['$or'] = colors.map(c => ({
+          'variants.color.name': { $regex: c, $options: 'i' }
+        }));
+      } else {
+        filter['variants.color.name'] = { $regex: color, $options: 'i' };
+      }
+    }
+
+    // Discount filter
+    if (discount) {
+      filter.discountPercentage = { $gte: parseInt(discount) };
     }
 
     // Search filter
-    if (search) {
+    const searchQuery = search || q;
+    if (searchQuery) {
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { tags: { $in: [new RegExp(search, 'i')] } }
+        { name: { $regex: searchQuery, $options: 'i' } },
+        { description: { $regex: searchQuery, $options: 'i' } },
+        { tags: { $in: [new RegExp(searchQuery, 'i')] } }
       ];
     }
 
@@ -85,12 +136,49 @@ router.get('/', async (req, res) => {
     // Execute query with pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
-    const products = await Product.find(filter)
-      .sort(sortObj)
-      .skip(skip)
-      .limit(parseInt(limit))
-      .select('name slug images.url images.isPrimary basePrice salePrice isOnSale discountPercentage category gender ratings')
-      .lean();
+    let products;
+
+    if (sort === 'price-low' || sort === 'price-high') {
+      const sortDir = sort === 'price-low' ? 1 : -1;
+      products = await Product.aggregate([
+        { $match: filter },
+        {
+          $addFields: {
+            effectivePrice: {
+              $cond: {
+                if: { $gt: ["$salePrice", 0] },
+                then: "$salePrice",
+                else: "$basePrice"
+              }
+            }
+          }
+        },
+        { $sort: { effectivePrice: sortDir } },
+        { $skip: skip },
+        { $limit: parseInt(limit) },
+        { 
+          $project: { 
+            name: 1, 
+            slug: 1, 
+            images: { url: 1, isPrimary: 1 }, 
+            basePrice: 1, 
+            salePrice: 1, 
+            isOnSale: 1, 
+            discountPercentage: 1, 
+            category: 1, 
+            gender: 1, 
+            ratings: 1 
+          } 
+        }
+      ]);
+    } else {
+      products = await Product.find(filter)
+        .sort(sortObj)
+        .skip(skip)
+        .limit(parseInt(limit))
+        .select('name slug images.url images.isPrimary basePrice salePrice isOnSale discountPercentage category gender ratings')
+        .lean();
+    }
 
     const withPrimary = (products || []).map(p => {
       const imgs = Array.isArray(p.images) ? p.images : [];

@@ -2,12 +2,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import { motion } from 'framer-motion';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 
 const Cart = () => {
   const { cart, loading, error, removeFromCart, updateQuantity, clearCart, getCartCount } = useCart();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const subtotal = cart.reduce((sum, item) => {
@@ -193,13 +195,21 @@ const Cart = () => {
 
                       {/* Remove Button */}
                       <button
-                        onClick={() =>
+                        onClick={() => {
+                          const product = item.product || {};
+                          const variantImage = item.variant?.imageUrl;
+                          const image = variantImage
+                            || product.primaryImage
+                            || (Array.isArray(product.images) && (product.images[0]?.url || product.images[0]))
+                            || '/images/placeholder.jpg';
+                          
                           removeFromCart(
                             item.product?._id || item.product,
                             item.variant || {}
-                          )
-                        }
-                        className="text-red-600 hover:text-red-700 transition-colors"
+                          );
+                          showToast('Item removed from bag', 'info', image);
+                        }}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>

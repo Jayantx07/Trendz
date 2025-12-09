@@ -1,13 +1,19 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Heart, ShoppingBag, Eye, Star } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Heart, ShoppingBag, Eye } from 'lucide-react';
 import { useCart } from '../../context/CartContext.jsx';
 import { useWishlist } from '../../context/WishlistContext.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { useToast } from '../../context/ToastContext.jsx';
 
 const NewArrivals = () => {
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
+  const { user } = useAuth();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Mock data for new arrivals
   const newArrivals = [
@@ -103,13 +109,21 @@ const NewArrivals = () => {
 
   const handleAddToCart = (product) => {
     addToCart(product, 1);
+    showToast('Added to your bag', 'success', product.image);
   };
 
   const handleWishlistToggle = (product) => {
     if (isInWishlist(product.id)) {
       removeFromWishlist(product.id);
+      showToast('Removed from wishlist', 'info', product.image);
     } else {
-      addToWishlist(product);
+      if (user) {
+        addToWishlist(product);
+        showToast('Added to wishlist', 'success', product.image);
+      } else {
+        localStorage.setItem('pendingWishlist', JSON.stringify(product));
+        navigate('/login', { state: { from: location.pathname } });
+      }
     }
   };
 
@@ -149,7 +163,9 @@ const NewArrivals = () => {
                   </div>
                   {/* Quick Actions */}
                   <div className="absolute top-3 right-3 z-10">
-                    <Star className={`w-5 h-5 cursor-pointer ${isInWishlist(product.id) ? 'fill-accent text-accent' : 'text-black'}`} />
+                    <button onClick={() => handleWishlistToggle(product)}>
+                      <Heart className={`w-5 h-5 cursor-pointer ${isInWishlist(product.id) ? 'fill-rose-500 text-rose-500' : 'text-black'}`} />
+                    </button>
                   </div>
                 </div>
 
@@ -166,14 +182,20 @@ const NewArrivals = () => {
                     </Link>
                   </h3>
                   
-                  <div className="product-price">
+                  <div className="flex flex-col gap-1 mt-2">
                     {product.salePrice ? (
                       <>
-                        <span className="product-current-price">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.salePrice)}</span>
-                        <span className="product-original-price">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.price)}</span>
+                        <span className="text-gray-400 line-through text-sm">
+                          {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.price)}
+                        </span>
+                        <span className="text-gray-900 font-medium text-lg">
+                          {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.salePrice)}
+                        </span>
                       </>
                     ) : (
-                      <span className="product-current-price">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.price)}</span>
+                      <span className="text-gray-900 font-medium text-lg">
+                        {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(product.price)}
+                      </span>
                     )}
                   </div>
                   

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -18,6 +18,7 @@ import { useCart } from '../context/CartContext.jsx';
 import { apiFetch } from '../utils/api.js';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import { getProductBySlug, localProducts, slugify } from '../utils/localProducts.js';
 import LazyImage from '../components/common/LazyImage.jsx';
 import { useMedia } from '../context/MediaMapContext.jsx';
@@ -26,6 +27,7 @@ const ProductDetail = () => {
   const { resolve } = useMedia();
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ const ProductDetail = () => {
 
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
-  const [toast, setToast] = useState(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     let isMounted = true;
@@ -114,11 +116,6 @@ const ProductDetail = () => {
     return true;
   };
 
-  const showToast = (message) => {
-    setToast(message);
-    setTimeout(() => setToast(null), 2200);
-  };
-
   const handleAddToCart = () => {
     if (!product) return;
     
@@ -186,21 +183,26 @@ const ProductDetail = () => {
     };
 
     addToCart(product, quantity, variant);
-    showToast('Added to your bag');
+    showToast('Added to your bag', 'success', variantCoverImage || resolve(product.primaryImage || product.image));
   };
 
   const handleWishlistToggle = () => {
     if (!product) return;
-    requireAuth(() => {
-      const pid = product._id || product.id;
-      if (isInWishlist(pid)) {
-        removeFromWishlist(pid);
-        showToast('Removed from wishlist');
-      } else {
+    const pid = product._id || product.id;
+    const image = resolve(product.primaryImage || product.image || '');
+    
+    if (isInWishlist(pid)) {
+      removeFromWishlist(pid);
+      showToast('Removed from wishlist', 'info', image);
+    } else {
+      if (user) {
         addToWishlist(product);
-        showToast('Saved to wishlist');
+        showToast('Added to wishlist', 'success', image);
+      } else {
+        localStorage.setItem('pendingWishlist', JSON.stringify(product));
+        navigate('/login', { state: { from: location.pathname } });
       }
-    });
+    }
   };
 
   const nextImage = () => {
@@ -297,14 +299,6 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {toast && (
-        <div className="fixed top-20 right-6 z-40">
-          <div className="bg-black text-white px-5 py-3 rounded-full shadow-lg text-sm font-medium tracking-wide flex items-center gap-2 animate-fade-in-up">
-            <span className="inline-block w-2 h-2 rounded-full bg-accent"></span>
-            <span>{toast}</span>
-          </div>
-        </div>
-      )}
       <div className="container pt-16 pb-8">
         {/* Breadcrumb */}
         <nav className="mb-8">
@@ -572,11 +566,11 @@ const ProductDetail = () => {
                 whileTap={{ scale: 0.95 }}
                 className={`p-4 rounded-lg border transition-colors ${
                   isInWishlist(product.id)
-                    ? 'border-black bg-black text-white hover:opacity-90'
+                    ? 'border-rose-500 bg-rose-50 text-rose-500'
                     : 'border-black bg-black text-white hover:opacity-90'
                 }`}
               >
-                <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
+                <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-rose-500' : ''}`} />
               </motion.button>
               
               <motion.button

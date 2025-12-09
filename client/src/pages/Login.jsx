@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useWishlist } from '../context/WishlistContext.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const { login, loading, error } = useAuth();
+  const { addToWishlist } = useWishlist();
   const [form, setForm] = useState({ email: '', password: '' });
   const [formError, setFormError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +27,18 @@ const Login = () => {
     }
     const success = await login(form.email, form.password);
     if (success) {
+      // Check for pending wishlist item
+      const pendingWishlist = localStorage.getItem('pendingWishlist');
+      if (pendingWishlist) {
+        try {
+          const product = JSON.parse(pendingWishlist);
+          await addToWishlist(product);
+          localStorage.removeItem('pendingWishlist');
+        } catch (e) {
+          console.error('Failed to add pending wishlist item', e);
+        }
+      }
+
       const from = location.state && location.state.from;
       navigate(from || '/account', { replace: true });
     }

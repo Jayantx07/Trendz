@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWishlist } from '../context/WishlistContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 const Wishlist = () => {
   const {
@@ -13,6 +14,7 @@ const Wishlist = () => {
   } = useWishlist();
 
   const { user } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const totalItems = typeof getWishlistCount === 'function'
@@ -89,7 +91,10 @@ const Wishlist = () => {
                           {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(price)}
                         </span>
                         <button
-                          onClick={() => removeFromWishlist(id)}
+                          onClick={() => {
+                            removeFromWishlist(id);
+                            showToast('Removed from wishlist', 'info', image);
+                          }}
                           className="text-xs font-medium text-red-600 hover:text-red-700 tracking-wide uppercase"
                         >
                           Remove
