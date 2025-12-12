@@ -203,7 +203,7 @@ const Navbar = () => {
                 aria-label="Cart"
               >
                 <ShoppingBag className="w-5 h-5" />
-                {cartItemCount > 0 && (
+                {user && cartItemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {cartItemCount}
                   </span>
@@ -232,82 +232,87 @@ const Navbar = () => {
                 </Link>
               )}
 
-              {/* Profile Dropdown */}
-              <div
-                className="relative"
-                onMouseEnter={() => {
-                  if (profileCloseTimer.current) {
-                    clearTimeout(profileCloseTimer.current);
-                    profileCloseTimer.current = null;
-                  }
-                  setProfileOpen(true);
-                }}
-                onMouseLeave={() => {
-                  if (profileCloseTimer.current) clearTimeout(profileCloseTimer.current);
-                  profileCloseTimer.current = setTimeout(() => setProfileOpen(false), 150);
-                }}
-              >
-                <Link
-                  to={user ? "/account" : "/login"}
-                  className={`p-2 transition-colors ${linkColor} flex items-center`}
-                  aria-label={user ? 'Account' : 'Sign in'}
+              {/* Profile Dropdown or Sign In */}
+              {user ? (
+                <div
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (profileCloseTimer.current) {
+                      clearTimeout(profileCloseTimer.current);
+                      profileCloseTimer.current = null;
+                    }
+                    setProfileOpen(true);
+                  }}
+                  onMouseLeave={() => {
+                    if (profileCloseTimer.current) clearTimeout(profileCloseTimer.current);
+                    profileCloseTimer.current = setTimeout(() => setProfileOpen(false), 150);
+                  }}
                 >
-                  {user ? (
-                    user.avatar ? (
+                  <Link
+                    to="/account"
+                    className={`p-2 transition-colors ${linkColor} flex items-center`}
+                    aria-label="Account"
+                  >
+                    {user.avatar ? (
                       <img src={user.avatar} alt="Profile" className="w-7 h-7 rounded-full object-cover border border-gray-200" />
                     ) : (
                       <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs font-medium">
                         {(user.firstName?.[0] || '').toUpperCase()}{(user.lastName?.[0] || '').toUpperCase()}
                       </div>
-                    )
-                  ) : (
-                    <User className="w-5 h-5" />
-                  )}
-                </Link>
+                    )}
+                  </Link>
 
-                {/* Dropdown Content - Only if user is logged in */}
-                <AnimatePresence>
-                  {user && profileOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      transition={{ duration: 0.18, ease: 'easeOut' }}
-                      className="absolute right-0 top-full w-40 mt-2"
-                      onMouseEnter={() => {
-                        if (profileCloseTimer.current) {
-                          clearTimeout(profileCloseTimer.current);
-                          profileCloseTimer.current = null;
-                        }
-                        setProfileOpen(true);
-                      }}
-                      onMouseLeave={() => {
-                        if (profileCloseTimer.current) clearTimeout(profileCloseTimer.current);
-                        profileCloseTimer.current = setTimeout(() => setProfileOpen(false), 150);
-                      }}
-                    >
-                      <div className="bg-white shadow-lg border border-gray-200 rounded-md p-2 flex flex-col gap-1">
-                        <Link
-                          to="/account"
-                          className="px-3 py-2 text-xs font-tenor tracking-wider text-gray-800 hover:text-accent hover:bg-gray-50 rounded text-left"
-                        >
-                          ACCOUNT
-                        </Link>
-                        <button
-                          onClick={() => {
-                            logout();
-                            navigate('/');
-                            setProfileOpen(false);
-                          }}
-                          className="px-3 py-2 text-xs font-tenor tracking-wider text-gray-800 hover:text-red-600 hover:bg-gray-50 rounded text-left w-full"
-                        >
-                          LOGOUT
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                  {/* Dropdown Content */}
+                  <AnimatePresence>
+                    {profileOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.18, ease: 'easeOut' }}
+                        className="absolute right-0 top-full w-40 mt-2"
+                        onMouseEnter={() => {
+                          if (profileCloseTimer.current) {
+                            clearTimeout(profileCloseTimer.current);
+                            profileCloseTimer.current = null;
+                          }
+                          setProfileOpen(true);
+                        }}
+                        onMouseLeave={() => {
+                          if (profileCloseTimer.current) clearTimeout(profileCloseTimer.current);
+                          profileCloseTimer.current = setTimeout(() => setProfileOpen(false), 150);
+                        }}
+                      >
+                        <div className="bg-white shadow-lg border border-gray-200 rounded-md p-2 flex flex-col gap-1">
+                          <Link
+                            to="/account"
+                            className="px-3 py-2 text-xs font-tenor tracking-wider text-gray-800 hover:text-accent hover:bg-gray-50 rounded text-left"
+                          >
+                            ACCOUNT
+                          </Link>
+                          <button
+                            onClick={() => {
+                              logout();
+                              navigate('/');
+                              setProfileOpen(false);
+                            }}
+                            className="px-3 py-2 text-xs font-tenor tracking-wider text-gray-800 hover:text-red-600 hover:bg-gray-50 rounded text-left w-full"
+                          >
+                            LOGOUT
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="ml-2 px-6 py-2 text-xs font-tenor tracking-wider transition-all duration-300 border border-white bg-black text-white rounded hover:bg-accent hover:border-accent hover:text-white"
+                >
+                  SIGN IN
+                </Link>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -409,7 +414,7 @@ const Navbar = () => {
                   className="block px-3 py-2 text-sm font-tenor tracking-wide text-gray-900 hover:text-accent transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  BAG ({cartItemCount})
+                  BAG {user && cartItemCount > 0 ? `(${cartItemCount})` : ''}
                 </Link>
                 <Link
                   to="/wishlist"
