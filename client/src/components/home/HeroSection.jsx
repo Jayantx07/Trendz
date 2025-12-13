@@ -27,10 +27,10 @@ const HeroSection = () => {
       {/* Overlay */}
       <div className="absolute inset-0 bg-black bg-opacity-40" />
 
-      {/* COUTURE and LUXURY labels at bottom corners */}
-      <div className="absolute bottom-0 left-0 right-0 z-20">
+      {/* COUTURE and LUXURY labels */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 p-8 md:p-12 w-full flex flex-col md:flex-row justify-start md:justify-between items-start md:items-end gap-2 md:gap-0">
         {/* Left - COUTURE */}
-        <div className="absolute bottom-12 left-12">
+        <div>
           <Link to="/products?category=couture" className="group">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-tenor text-white tracking-wider font-light group-hover:text-gray-300 transition-colors duration-300">
               COUTURE
@@ -39,7 +39,7 @@ const HeroSection = () => {
         </div>
         
         {/* Right - LUXURY */}
-        <div className="absolute bottom-12 right-12">
+        <div className="md:text-right">
           <Link to="/products?category=luxury" className="group">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-tenor text-white tracking-wider font-light group-hover:text-gray-300 transition-colors duration-300">
               LUXURY
